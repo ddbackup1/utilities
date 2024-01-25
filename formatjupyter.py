@@ -1,43 +1,108 @@
 # %%
-print("formatjupyter version 001a Start")
-fileo = open("Z:/SharedA/Repos/data/jupoutput.txt", "w")
-firstwrite = True
+print("formatjupyter version 001 Start")
+print(" 2024-01-25 Update to process all level headers same")
+
+programLocation = "Z:/SharedA/Repos/utilities/formatjupyter.py"
+fileInput = "Z:/SharedA/Repos/data/jupinput.txt"
+fileOutput = "Z:/SharedA/Repos/data/jupoutput.txt"
+
+print("formatjupyter version 001 Start")
+print("------------------------------- ")
+print("Program Location  :", programLocation)
+print("Input   File      :", fileInput)
+print("Output  File      :", fileOutput)
+
+
+# level indicates if python {p1} is written
+level1 = False
+level2 = False
+level3 = True
+level4 = True
+level5 = True
+level6 = True
+
+# indcate last written was p1 or p2
+statep1 = False
 p1 = "```python"
 p2 = "```"
 index01 = 0
 
-with open("Z:/SharedA/Repos/data/jupinput.txt") as filei:
+fileo = open(fileOutput, "w")
+with open(fileInput) as filei:
     line = filei.readline()
     while line:
         if bool(line.strip()):  # block empty lines
-            if "# %%" in line:
-                b = 0
-            elif "# " in line[0:2]:
-                print("#  heading error line dropped")
-                print("line:> ", line.strip())
-                print("-----")
-            elif "## " in line[0:3]:
-                print("## heading error line dropped")
-                print("line:> ", line.strip())
-                print("-----")
-            elif "### " in line[0:4]:
+            if "# %%" in line[0:4]:
                 index01 += 1
-                if firstwrite:
-                    firstwrite = False
-                    fileo.write("### ✔" + line[4:-1] + "\n")
-                    fileo.write(f"[{index01}]\n")
-                    fileo.write(f"{p1}\n")
-                else:
+            elif "# " in line[0:2]:
+                print(f"Level1 Python p1 Flag = {level1}")
+                print("line1:> ", line.strip())
+                print("-----")
+                if statep1:
                     fileo.write(f"{p2}\n")
-                    fileo.write("### ✔" + line[4:-1] + "\n")
+                    statep1 = False
+                fileo.write("# 🟡" + line[2:-1] + "\n")
+                if level1:
                     fileo.write(f"[{index01}]\n")
                     fileo.write(f"{p1}\n")
+                    statep1 = True
+            elif "## " in line[0:3]:
+                print(f"Level2 Python p1 Flag = {level2}")
+                print("line2:> ", line.strip())
+                print("-----")
+                if statep1:
+                    fileo.write(f"{p2}\n")
+                    statep1 = False
+                fileo.write("## 🟡" + line[3:-1] + "\n")
+                if level2:
+                    fileo.write(f"[{index01}]\n")
+                    fileo.write(f"{p1}\n")
+                    statep1 = True
+            elif "### " in line[0:4]:
+                if statep1:
+                    fileo.write(f"{p2}\n")
+                    statep1 = False
+                fileo.write("### ✔" + line[4:-1] + "\n")
+                if level3:
+                    fileo.write(f"[{index01}]\n")
+                    fileo.write(f"{p1}\n")
+                    statep1 = True
+            elif "#### " in line[0:5]:
+                if statep1:
+                    fileo.write(f"{p2}\n")
+                    statep1 = False
+                fileo.write("#### 🔸" + line[5:-1] + "\n")
+                if level4:
+                    fileo.write(f"[{index01}]\n")
+                    fileo.write(f"{p1}\n")
+                    statep1 = True
+            elif "##### " in line[0:6]:
+                if statep1:
+                    fileo.write(f"{p2}\n")
+                    statep1 = False
+                fileo.write("##### 🔹" + line[6:-1] + "\n")
+                if level5:
+                    fileo.write(f"[{index01}]\n")
+                    fileo.write(f"{p1}\n")
+                    statep1 = True
+            elif "###### " in line[0:7]:
+                if statep1:
+                    fileo.write(f"{p2}\n")
+                    statep1 = False
+                fileo.write("###### 🔺" + line[7:-1] + "\n")
+                if level6:
+                    fileo.write(f"[{index01}]\n")
+                    fileo.write(f"{p1}\n")
+                    statep1 = True
             else:
                 fileo.write(line)
         line = filei.readline()
 fileo.write(f"[{index01}]\n")
-fileo.write(f"{p2}\n")
+if statep1:
+    fileo.write(f"{p2}\n")
+    statep1 = False
 fileo.close()
-print("formatjupyter version 001a End")
+
+print("formatjupyter version 001 End")
 
 # %%
