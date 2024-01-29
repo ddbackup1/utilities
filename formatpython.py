@@ -1,5 +1,6 @@
 # %%
 import os
+import time
 
 
 # *****************************************************************************
@@ -37,96 +38,74 @@ def getListOfFiles(dirName, taglist1, excludefile):
     return allFiles
 
 
-def processFileMain(allFilesMain, taglist2, excludetag):
-    # level indicates if python {p1} is written
-    level1 = True
-    level2 = True
-    level3 = True
-    level4 = True
-    level5 = True
-    level6 = True
-
+def processFileMain(allFilesMain):
     # indcate last written was p1 or p2
-    statep1 = False
+    p1Open = False
+    headerWritten = True
     p1 = "```python"
     p2 = "```"
     index01 = 0
-    firstP1 = True
+    dirProcessed = []
 
     for programName in allFilesMain:
         basefilename = os.path.basename(programName)
-        direname = os.path.dirname(programName)
+        dirname = os.path.dirname(programName)
         fullfilename, file_extension = os.path.splitext(basefilename)
-        if firstP1:
-            fileo.write("# 🟪" + dirName + "\n")
-            firstP1 = False
-        fileo.write("# 🟩" + fullfilename + "\n")
+        if dirname in dirProcessed:
+            fileo.write(f"## 🟩 {fullfilename} \n")
+        else:
+            fileo.write(f"# 🟪 {dirName} \n")
+            fileo.write(f"## 🟩 {fullfilename} \n")
+        dirProcessed = dirname
         with open(programName) as filei:
             line = filei.readline()
             while line:
                 if bool(line.strip()):  # block empty lines
-                    if "# %%" in line[0:4]:
-                        index01 += 1
-                    elif "# " in line[0:2]:
-                        if statep1:
-                            fileo.write(f"{p2}\n")
-                            statep1 = False
-                        fileo.write("## 🟡" + line[2:-1] + "\n")
-                        if level1:
+                    if bool(line.strip()):  # block empty lines
+                        if "# ++" in line[0:4]:
+                            if p1Open:
+                                fileo.write(f"{p2}\n")
+                                p1Open = False
+                            fileo.write("## 🟪" + line[5:-1] + "\n")
+                        elif "#c/" in line[0:3]:
+                            if p1Open:
+                                fileo.write(f"{p2}\n")
+                                p1Open = False
+                            fileo.write(line)
+                        elif "# %%" in line[0:4]:
+                            if not headerWritten:
+                                print("missing headerWritten for index", index01)
+                            headerWritten = False
+                            index01 += 1
+                            if p1Open:
+                                fileo.write(f"{p2}\n")
+                                p1Open = False
                             fileo.write(f"[{index01}]\n")
+                            if bool(line[4:-1].strip()):
+                                fileo.write("### 🟡" + line[5:-1] + "\n")
+                                headerWritten = True
                             fileo.write(f"{p1}\n")
-                            statep1 = True
-                    elif "## " in line[0:3]:
-                        print(f"Level2 Python p1 Flag = {level2}")
-                        print("line2:> ", line.strip())
-                        print("-----")
-                        if statep1:
-                            fileo.write(f"{p2}\n")
-                            statep1 = False
-                        fileo.write("### ✔" + line[3:-1] + "\n")
-                        if level2:
-                            fileo.write(f"[{index01}]\n")
-                            fileo.write(f"{p1}\n")
-                            statep1 = True
-                    elif "### " in line[0:4]:
-                        if statep1:
-                            fileo.write(f"{p2}\n")
-                            statep1 = False
-                        fileo.write("#### 🔸" + line[4:-1] + "\n")
-                        if level3:
-                            fileo.write(f"[{index01}]\n")
-                            fileo.write(f"{p1}\n")
-                            statep1 = True
-                    elif "#### " in line[0:5]:
-                        if statep1:
-                            fileo.write(f"{p2}\n")
-                            statep1 = False
-                        fileo.write("##### 🔹" + line[5:-1] + "\n")
-                        if level4:
-                            fileo.write(f"[{index01}]\n")
-                            fileo.write(f"{p1}\n")
-                            statep1 = True
-                    elif "##### " in line[0:6]:
-                        if statep1:
-                            fileo.write(f"{p2}\n")
-                            statep1 = False
-                        fileo.write("###### ✔" + line[6:-1] + "\n")
-                        if level5:
-                            fileo.write(f"[{index01}]\n")
-                            fileo.write(f"{p1}\n")
-                            statep1 = True
-                    else:
+                            p1Open = True
+                            fileo.write("# " + line[5:-1] + "\n")
+                        else:
+                            if (
+                                line[0:3] == "#--"
+                                or line[0:3] == "#++"
+                                or line[0:3] == "#%%"
+                            ):
+                                print(f"invalid control character {line}, {index01}")
                         fileo.write(line)
+                        if "#c/" in line:
+                            print(f"invalid tag character {line}, {index01}")
                 line = filei.readline()
-        if statep1:
+        if p1Open:
             fileo.write(f"{p2}\n")
-            statep1 = False
+            p1Open = False
 
 
 # Main:
 # remember these are list terms need to be separated
-taglist1 = ["Ex"]  # files
-taglist2 = []  # tags
+taglist1 = ["IO"]  # files
 
 excludefile = [
     "@",
@@ -137,24 +116,24 @@ excludefile = [
     "excalidraw",
     "excalibrain",
 ]
-excludetag = ["#r"]
-
-dirName = "Z:/SharedA/Python/Projects/PythonExercises"
-fileOutput = "Z:/SharedA/Repos/data/totoutput.txt"
-programLocation = "Z:/SharedA/Repos/Test/total01.py"
+# dirName = "Z:/SharedA/Python/Projects/PythonExercises"
+dirName = "Z:\SharedA\Python\Projects\CS50P\PythonIntro\Code"
+fileOutput = "Z:/SharedA/Repos/data/pythonoutput.txt"
+programLocation = "Z:/SharedA/Repos/Test/formatpython.py"
 # dirName = "Z:\SharedA\Obsidian\AlphaVault"
 
-print("total01 version 001 Start")
+curr_time = time.strftime("%H:%M:%S", time.localtime())
+print("Current Time is :", curr_time)
+print("formatpython version 001 Start")
 print("------------------------------- ")
 print("Program Location  :", programLocation)
 print("Input   Directory :", dirName)
 print("Result  File      :", fileOutput)
+print("Taglist1- Files   :", taglist1)
 print("Exclude File List :", excludefile)
-print("Exclude Tag  List :", excludetag)
 
 fileo = open(fileOutput, "w")
 fileo = open(fileOutput, "a")
-
 
 print("------------------:")
 print("FILE LIST SEARCHED:")
@@ -166,10 +145,14 @@ print("------------------:")
 
 allFilesMain = []
 allFilesMain = getListOfFiles(dirName, taglist1, excludefile)
-processFileMain(allFilesMain, taglist2, excludetag)
+processFileMain(allFilesMain)
 
 fileo.close()
 print("------------------------------------- ")
-print("total01 version 001 Termination")
+print("formatpython version 001 Termination")
 print("Result File       : ", fileOutput)
+# %%
+
+# %%
+
 # %%
