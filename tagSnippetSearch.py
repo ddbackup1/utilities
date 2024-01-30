@@ -135,7 +135,7 @@ curr_time = time.strftime("%H:%M:%S", time.localtime())
 print("Current Time is :", curr_time)
 
 taglist1 = []  # files
-taglist2 = ["numpy", "array"]  # tags
+taglist2 = ["tsx", "sql"]  # tags
 
 excludefile = [
     "@",
@@ -148,7 +148,7 @@ excludefile = [
 ]
 excludetag = ["#r"]
 
-dirName = "Z:\SharedA\Obsidian\CodeVault"
+dirName = "H:\Backup\Obsidian\CodeVault"
 fileOutput = "Z:/SharedA/Repos/data/tagsnippet.txt"
 programLocation = "Z:/SharedA/Repos/utilities/tagSnippetSearch.py"
 # dirName = "Z:\SharedA\Obsidian\AlphaVault"

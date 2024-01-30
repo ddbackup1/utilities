@@ -154,8 +154,8 @@ def processFileMain(allFilesMain, taglist2, excludetag):
 
 # Main:
 # remember these are list terms need to be separated
-taglist1 = ["CS50"]  # files
-taglist2 = ["/TUTOR", "/SQL"]  # tags
+taglist1 = []  # files
+taglist2 = ["/SQL", "lam"]  # tags
 
 excludefile = [
     "@",
@@ -168,7 +168,7 @@ excludefile = [
 ]
 excludetag = ["#r"]
 
-dirName = "C:/2data/Obsidian/AlphaVault"
+dirName = "H:\Backup\Obsidian\CodeVault"
 fileOutput = "Z:/SharedA/Repos/data/tagsearch.txt"
 programLocation = "Z:/SharedA/Repos/utilities/tagNameSearch.py"
 # dirName = "Z:\SharedA\Obsidian\AlphaVault"
