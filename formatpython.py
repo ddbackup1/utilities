@@ -328,115 +328,80 @@ def processFileMain(allFilesMain):
         fileo.close()
 
 
+def mainline():
+    global inputFileExtension
+    global mainFileExtension
+    if mode == "Jupyter":
+        inputFileExtension = ".txt"
+        mainFileExtension = ".ipynb"
+    elif mode == "Python":
+        inputFileExtension = ".py"
+        mainFileExtension = ".py"
+    elif mode == "SQL":
+        inputFileExtension = ".sql"
+        mainFileExtension = ".sql"
+    elif mode == "txt":
+        inputFileExtension = ".txt"
+        mainFileExtension = ".txt"
+    elif mode == "ahk":
+        inputFileExtension = ".ahk"
+        mainFileExtension = ".ahk"
+    elif mode == "mdown":
+        inputFileExtension = ".mdown"
+        mainFileExtension = ".mdown"
+    elif mode == "markdown":
+        inputFileExtension = ".markdown"
+        mainFileExtension = ".markdwon"
+    elif mode == "data":
+        inputFileExtension = ".data"
+        mainFileExtension = ".data"
+    elif mode == "csv":
+        inputFileExtension = ".csv"
+        mainFileExtension = ".csv"
+    elif mode == "html":
+        inputFileExtension = ".html"
+        mainFileExtension = ".html"
+    elif mode == "htm":
+        inputFileExtension = ".htm"
+        mainFileExtension = ".htm"
+    else:
+        inputFileExtension = ".zzz"
+        mainFileExtension = ".zzz"
+
+    print("Current Time is :", curr_time)
+    print("formatpython version 002 Start")
+    print("------------------------------- ")
+    print("Program Location  :", programLocation)
+    print("Input   Directory :", dirNameInput)
+    print("Output  Direcotry :", dirNameOutput)
+    print("Include File List :", taglist1)
+    print("Exclude File List :", excludefile)
+    print("Include File Path :", includepath)
+    print("Exclude File Path :", excludepath)
+    print("autoTagListEntry  :", autoTagListEntry)
+    print("mode              :", mode)
+    print("inputFileExtension:", inputFileExtension)
+    print("mainFileExtension :", mainFileExtension)
+
+    print("------------------:")
+    print("FILE LIST SEARCHED:")
+    print("------------------:")
+    print(taglist1)
+    print("------------------:")
+
+    allFilesMain = []
+    allFilesMain = getListOfFiles(
+        dirNameInput, taglist1, excludefile, includepath, excludepath
+    )
+
+    processFileMain(allFilesMain)
+    print("------------------------------------- ")
+    print("formatpython version 002 Termination")
+
+
+#
 # Main:
-# remember these are list terms need to be separated
-curr_time = time.strftime("%H:%M:%S", time.localtime())
-
-mode = "Python"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = []  # files
-
-# mode = "Jupyter"
-# dirNameInput = "Z:\SharedA\Python\Projects\Data\jupyter"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatjupyter.py"
-# taglist1 = ["jupfile"]  # files
-
-# mode = "SQL"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-
-# mode = "txt"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = ["mbox, name"]  # files
-
-# mode = "ahk"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-
-# mode = "mdown"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-
-# mode = "markdown"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-
-# mode = "data"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-
-# mode = "csv"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-
-# mode = "html"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-
-# mode = "htm"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-
-
-if mode == "Jupyter":
-    inputFileExtension = ".txt"
-    mainFileExtension = ".ipynb"
-elif mode == "Python":
-    inputFileExtension = ".py"
-    mainFileExtension = ".py"
-elif mode == "SQL":
-    inputFileExtension = ".sql"
-    mainFileExtension = ".sql"
-elif mode == "txt":
-    inputFileExtension = ".txt"
-    mainFileExtension = ".txt"
-elif mode == "ahk":
-    inputFileExtension = ".ahk"
-    mainFileExtension = ".ahk"
-elif mode == "mdown":
-    inputFileExtension = ".mdown"
-    mainFileExtension = ".mdown"
-elif mode == "markdown":
-    inputFileExtension = ".markdown"
-    mainFileExtension = ".markdwon"
-elif mode == "data":
-    inputFileExtension = ".data"
-    mainFileExtension = ".data"
-elif mode == "csv":
-    inputFileExtension = ".csv"
-    mainFileExtension = ".csv"
-elif mode == "html":
-    inputFileExtension = ".html"
-    mainFileExtension = ".html"
-elif mode == "htm":
-    inputFileExtension = ".htm"
-    mainFileExtension = ".htm"
-else:
-    inputFileExtension = ".zzz"
-    mainFileExtension = ".zzz"
-
-
+#
 excludefile = [
     "@",
     "$My",
@@ -476,41 +441,82 @@ autoTagListEntry = ["dictionary","dictreader","sql","sqlite","select","insert","
 ]
 # fmt: on
 
-
-# autoTagListEntry = [
-#     "order",
-#     "distinct",
-# ]
-
-
-print("Current Time is :", curr_time)
-print("formatpython version 001 Start")
-print("------------------------------- ")
-print("Program Location  :", programLocation)
-print("Input   Directory :", dirNameInput)
-print("Output  Direcotry :", dirNameOutput)
-print("Include File List :", taglist1)
-print("Exclude File List :", excludefile)
-print("Include File Path :", includepath)
-print("Exclude File Path :", excludepath)
-print("autoTagListEntry  :", autoTagListEntry)
-
-
-print("------------------:")
-print("FILE LIST SEARCHED:")
-print("------------------:")
-print(taglist1)
-print("------------------:")
-# fmt: off
-# fmt: on
-
+curr_time = time.strftime("%H:%M:%S", time.localtime())
 allFilesMain = []
-allFilesMain = getListOfFiles(
-    dirNameInput, taglist1, excludefile, includepath, excludepath
-)
 
-processFileMain(allFilesMain)
-print("------------------------------------- ")
-print("formatpython version 001 Termination")
+mode = "Python"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = ["IOand"]  # files
+mainline()
 
-# %%
+mode = "Jupyter"
+dirNameInput = "Z:\SharedA\Python\Projects\Data\jupyter"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatjupyter.py"
+taglist1 = ["jupfile"]  # files
+mainline()
+
+# mode = "SQL"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# taglist1 = [""]  # files
+# mainline()
+
+# mode = "txt"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# taglist1 = ["mbox, name"]  # files
+# mainline()
+
+# mode = "ahk"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# taglist1 = [""]  # files
+# mainline()
+
+# mode = "mdown"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# taglist1 = [""]  # files
+# mainline()
+
+# mode = "markdown"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# taglist1 = [""]  # files
+# mainline()
+
+# mode = "data"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# taglist1 = [""]  # files
+# mainline()
+
+# mode = "csv"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# taglist1 = [""]  # files
+# mainline()
+
+# mode = "html"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# taglist1 = [""]  # files
+# mainline()
+
+# mode = "htm"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# taglist1 = [""]  # files
+# mainline()
