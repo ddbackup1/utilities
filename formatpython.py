@@ -48,84 +48,115 @@ def getListOfFiles(dirNameInput, taglist1, excludefile, includepath, excludepath
 
 def processFileMain(allFilesMain):
     # indicate last written was P1block or P2block
-    P1LastBlock = False
-    headerWritten = False
+    # P1BlockModeOn = False
+    # headerWritten = False
+    BlockTypePer4  = "# %%"
+    BlockTypeNeg4  = "# --"
+    BlockTypePos4  = '# ++'
+    BlockTypeTid4  = '# ~~'
+    BlockTypeEqu5  = '# == '
     if mode == "Python":
         extname = ".py"
         P1block = "```python"
         P2block = "```"
-        blockHeader = "# %%"
-        blockHeaderSkip = "# --"
+        blockHeaderPer4 = BlockTypePer4
+        blockHeaderNeg4 = BlockTypeNeg4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "Jupyter":
         extname = ".ipynb"
         P1block = "```python"
         P2block = "```"
-        blockHeader = "# --"
-        blockHeaderSkip = "# %%"
+        blockHeaderPer4 = BlockTypePer4
+        blockHeaderNeg4 = BlockTypeNeg4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "SQL":
         extname = ".sql"
         P1block = "```sql"
         P2block = "```"
-        blockHeader = "# %%"
-        blockHeaderSkip = "# --"
+        blockHeaderPer4 = BlockTypePer4
+        blockHeaderNeg4 = BlockTypeTid4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "txt":
         extname = ".txt"
         P1block = "___"
         P2block = ""
-        blockHeader = "# ~~"
-        blockHeaderSkip = "# ~~"
+        blockHeaderPer4 = BlockTypeTid4
+        blockHeaderNeg4 = BlockTypeTid4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "ahk":
         extname = ".ahk"
         P1block = "```c"
         P2block = "```"
-        blockHeader = "# ~~"
-        blockHeaderSkip = "# ~~"
+        blockHeaderPer4 = BlockTypeTid4
+        blockHeaderNeg4 = BlockTypeTid4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "mdown":
         extname = ".mdown"
-        P1block = "___"
+        P1block = ""
         P2block = ""
-        blockHeader = "# ~~"
-        blockHeaderSkip = "# ~~"
+        blockHeaderPer4 = BlockTypeTid4
+        blockHeaderNeg4 = BlockTypeTid4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "markdown":
         extname = ".markdown"
-        P1block = "___"
+        P1block = ""
         P2block = ""
-        blockHeader = "# ~~"
-        blockHeaderSkip = "# ~~"
+        blockHeaderPer4 = BlockTypeTid4
+        blockHeaderNeg4 = BlockTypeTid4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "data":
         extname = ".data"
-        P1block = "___"
+        P1block = ""
         P2block = ""
-        blockHeader = "# ~~"
-        blockHeaderSkip = "# ~~"
+        blockHeaderPer4 = BlockTypeTid4
+        blockHeaderNeg4 = BlockTypeTid4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "csv":
         extname = ".csv"
-        P1block = "___"
+        P1block = ""
         P2block = ""
-        blockHeader = "# ~~"
-        blockHeaderSkip = "# ~~"
+        blockHeaderPer4 = BlockTypeTid4
+        blockHeaderNeg4 = BlockTypeTid4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "html":
         extname = ".html"
         P1block = "```python"
         P2block = "```"
-        blockHeader = "# ~~"
-        blockHeaderSkip = "# ~~"
+        blockHeaderPer4 = BlockTypeTid4
+        blockHeaderNeg4 = BlockTypeTid4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     elif mode == "htm":
         extname = ".htm"
         P1block = "```python"
         P2block = "```"
-        blockHeader = "# ~~"
-        blockHeaderSkip = "# ~~"
+        blockHeaderPer4 = BlockTypeTid4
+        blockHeaderNeg4 = BlockTypeTid4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
     else:
         P1block = "```python"
         P2block = "```"
         extname = ".py"
-        blockHeader = "# %%"
-        blockHeaderSkip = "# --"
+        blockHeaderPer4 = BlockTypePer4
+        blockHeaderNeg4 = BlockTypeNeg4
+        blockHeaderPos4 = BlockTypePos4
+        blockHeaderEqu5 = BlockTypeEqu5
 
     for programName in allFilesMain:
         blockCount = 0
-        P1Written = False
+        lineCount = 0
+        P1BlockModeOn = False
+        headerWritten = False
         basefilename = os.path.basename(programName)
         dirNameInput = os.path.dirname(programName)
         fullfilename, file_extension = os.path.splitext(basefilename)
@@ -137,20 +168,28 @@ def processFileMain(allFilesMain):
         with open(programName) as filei:
             line = filei.readline()
             # read extra line for jupyter files
-            if mode == "Jupyter" and blockHeaderSkip in line:
-                line = filei.readline()
-            dirNameOutputbase = [dirNameOutput]
-            if "# ++ Z:\\" in line:
-                dirNameInputSplit = line[5:-1].split("\\")
-                dirname1 = dirNameInputSplit[-1]
-                dirname2 = dirname1.split(sep=".")
-                fullfilename = "".join(dirname2[0])
-                dirNameInputSplit.pop()
-                dirNameInput = "\\".join(dirNameInputSplit)
-                line = filei.readline()
+            if mode == "Jupyter": 
+                if blockHeaderPer4 in line:
+                    line = filei.readline()
+                    if (blockHeaderPos4 == line[0:4]) and \
+                       ("# ++ Z:\\" in line or "# ++ C:\\" in line):
+                        dirNameInputSplit = line[5:-1].split("\\")
+                        dirname1 = dirNameInputSplit[-1]
+                        dirname2 = dirname1.split(sep=".")
+                        fullfilename = "".join(dirname2[0])
+                        dirNameInputSplit.pop()
+                        dirNameInput = "\\".join(dirNameInputSplit)
+                        line = filei.readline()
+                    else:
+                        print ("Invalid header line for Jupyter file")
+                        continue
+                else:
+                    print ("Invalid header line for Jupyter file")
+                    continue
             else:
                 dirNameInputSplit = dirNameInput.split("\\")
 
+            dirNameOutputbase = [dirNameOutput]
             clipInputList = dirNameInput.rstrip().split("\\")
             if mode == "Jupyter":
                 clipOutputBackward = (
@@ -197,7 +236,8 @@ def processFileMain(allFilesMain):
             fileo.write(f"vspath::           {clipOutputForward}\n")
             fileo.write(f"vsfolder::         {clipTempList2}\n")
             fileo.write(
-                f"vsext::              {extname[1:len(extname)]}   |   **mode::** {mode}    **inputext::** {inputFileExtension[1:len(inputFileExtension)]}   |   [[CodeVault Code]]\n"
+                f"vsext::              {extname}   |   **mode::** {mode}    **inputext::**\
+ {inputFileExtension}   |\   [[CodeVault Code]]\n"
             )
             fileo.write(f"vsfilename::     {clipOutputFile}/{fullfilename}{extname}\n")
             if mode == "Jupyter":
@@ -215,39 +255,54 @@ def processFileMain(allFilesMain):
             autoTagListTotal = []
             while line:
                 if bool(line.strip()):  # block empty lines
+                    lineCount += 1
                     linelist = line.split()
-                    if "# comment: ".lower() == line[0:11].lower():
-                        if blockCount == 0:
-                            fileo.write(f"vscomment::   {line[11:len(line)]}\n")
-                    elif "-- comment: ".lower() == line[0:12].lower():
-                        if blockCount == 0:
-                            fileo.write(f"vscomment::   {line[12:len(line)]}\n")
-                    elif "# ++" in line[0:4]:
-                        if P1LastBlock:
+
+                    if lineCount == 1:
+                        fileo.write("vstags:: `=this.file.tags`\n")
+                        fileo.write("___\n")
+
+                    if "# comment: ".lower() == line[0:11].lower() and  lineCount == 1:
+                            fileo.write(f"vscomment::  {line[11:]} \n")
+                    elif "-- comment: ".lower() == line[0:12].lower() and lineCount == 1:
+                            fileo.write(f"vscomment::  {line[12:]} \n")
+                    elif blockHeaderPos4 in line[0:4]:
+                        if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
-                            P1LastBlock = False
-                        # fmt: off
-                        fileo.write("## 🟪" + line[5:len(line)])
-                    # fmt: on
+                            P1BlockModeOn = False
+                        fileo.write("## 🟪" + line[5:])
                     elif "# #c/" in line[0:5] or "#c/" in line[0:3]:
                         fileo.write(line.rstrip() + "\n")
-                        if P1LastBlock:
+                        if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
-                            P1LastBlock = False
-                        linelist = line.split()
+                            P1BlockModeOn = False
                         for word in linelist:
                             if word not in autoTagListTotal:
                                 if word[0:3] == "#c/":
                                     autoTagListTotal.append(word)
                         if len(autoTagListTotal) > 0:
                             autoTagListTotal.sort()
-                            fileo.write(f"#c/tsx ")
                             for tag in autoTagListTotal:
                                 fileo.write(f"{tag} ")
                             fileo.write(" \n")
                             autoTagListTotal = []
-                    elif blockHeader in line[0:4]:
-                        if bool(line[4 : len(line)].strip()):
+                    elif blockHeaderEqu5 in line[0:5]:
+                        if P1BlockModeOn:
+                            fileo.write(f"{P2block}\n")
+                            P1BlockModeOn = False
+                        fileo.write(line[5:].rstrip() + "\n")
+                    elif blockHeaderPer4 in line[0:4] or \
+                         blockHeaderNeg4 in line[0:4]:
+                        if bool(line[5:].strip()):
+                            if len(autoTagListTotal) > 0:
+                                if P1BlockModeOn:
+                                    fileo.write(f"{P2block}\n")
+                                    P1BlockModeOn = False
+                                autoTagListTotal.sort()
+                                for tag in autoTagListTotal:
+                                    fileo.write(f"{tag} ")
+                                    fileo.write(" \n")
+                                autoTagListTotal = []
                             if blockCount > 0:
                                 if headerWritten == False:
                                     print(
@@ -255,76 +310,53 @@ def processFileMain(allFilesMain):
                                         {basefilename} index={blockCount} \nline={line}"
                                     )
                             blockCount += 1
-                            if P1LastBlock:
+                            if P1BlockModeOn:
                                 fileo.write(f"{P2block}\n")
-                                P1LastBlock = False
-                            # if characters on this line write header
-                            # fmt: off
-                            fileo.write("### 🟡" + line[5:len(line)])
+                                P1BlockModeOn = False
+                            fileo.write("### 🟡" + line[5:])
                             fileo.write(f"[{blockCount}]\n")
-                            # fmt: on
                             headerWritten = True
-                            if P1LastBlock == False:
-                                P1Written = True
-                                if blockCount == 0:
-                                    fileo.write(f"___\n")
-                                fileo.write(f"{P1block}\n")
-                                P1LastBlock = True
-                            # fmt: off
-                            fileo.write("# " + line[5:len(line.strip())] + '\n')
-                        else:
-                            if P1Written == False:
-                                P1Written = True
-                                if blockCount == 0:
-                                    fileo.write(f"___\n")
-                                fileo.write(f"{P1block}\n")
-                                P1LastBlock = True
-                    # fmt: on
-                    elif blockHeaderSkip in line[0:4]:
-                        bsk = 0
                     else:
                         if (
                             line[0:3] == "#--"
                             or line[0:3] == "#++"
                             or line[0:3] == "#%%"
+                            or 'comment' in line
                         ):
                             print(
-                                f"invalid control character \
+                                f"invalid OTHER format found on line \
                                     {basefilename} {line}, {blockCount}"
                             )
-                        else:
-                            if P1Written == False:
-                                P1Written = True
-                                if blockCount == 0:
-                                    fileo.write(f"___\n")
-                                fileo.write(f"{P1block}\n")
-                                P1LastBlock = True
-                            for tag in autoTagListEntry:
-                                if tag.lower() in line.lower():
-                                    tagtemp = "#c/" + tag.lower()
-                                    if tagtemp not in autoTagListTotal:
-                                        autoTagListTotal.append(tagtemp)
-                            fileo.write(line.rstrip() + "\n")
+                        if P1BlockModeOn == False:
+                            fileo.write(f"{P1block}\n")
+                            P1BlockModeOn = True
+                        fileo.write(line.rstrip() + "\n")
+
+                        for tag in autoTagListEntry:
+                            if tag.lower() in line.lower():
+                                tagtemp = "#c/" + tag.lower()
+                                if tagtemp not in autoTagListTotal:
+                                    autoTagListTotal.append(tagtemp)
 
                     if "#c/" in line:
                         if line[0:5] == "# #c/" or line[0:3] == "#c/":
                             bsk = 0
                         else:
                             print(
-                                f"invalid tag character \
+                                f"invalid TAG format found on line \
                                     {basefilename} {line}, {blockCount}"
                             )
                 line = filei.readline()
-        if P1LastBlock:
+        if P1BlockModeOn:
             fileo.write(f"{P2block}\n")
-            P1LastBlock = False
-            if len(autoTagListTotal) > 0:
-                autoTagListTotal.sort()
-                fileo.write(f"#c/tsx ")
-                for tag in autoTagListTotal:
-                    fileo.write(f"{tag} ")
-                fileo.write(" \n")
-                autoTagListTotal = []
+            P1BlockModeOn = False
+        if len(autoTagListTotal) > 0:
+            autoTagListTotal.sort()
+            fileo.write(f"#c/tsx ")
+            for tag in autoTagListTotal:
+                fileo.write(f"{tag} ")
+            fileo.write(" \n")
+            autoTagListTotal = []
         fileo.close()
 
 
@@ -332,7 +364,7 @@ def mainline():
     global inputFileExtension
     global mainFileExtension
     if mode == "Jupyter":
-        inputFileExtension = ".txt"
+        inputFileExtension = ".py"
         mainFileExtension = ".ipynb"
     elif mode == "Python":
         inputFileExtension = ".py"
@@ -437,7 +469,7 @@ excludepath = [
 ]
 # fmt: off
 autoTagListEntry = ["dictionary","dictreader","sql","sqlite","select","insert","fetchone",
-                    "argv","except","try",
+                    "argv","except","try","dataframe","derekbanas"
 ]
 # fmt: on
 
@@ -448,75 +480,77 @@ mode = "Python"
 dirNameInput = "Z:\SharedA\Python\Projects"
 dirNameOutput = "H:\Backup\Obsidian\CodeVault"
 programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = ["IOand"]  # files
+taglist1 = ["program"]  # files
 mainline()
 
 mode = "Jupyter"
-dirNameInput = "Z:\SharedA\Python\Projects\Data\jupyter"
+dirNameInput = "Z:\SharedA\Python\Projects"
 dirNameOutput = "H:\Backup\Obsidian\CodeVault"
 programLocation = "Z:/SharedA/Repos/Utilities/formatjupyter.py"
-taglist1 = ["jupfile"]  # files
+taglist1 = [""]  # files
 mainline()
 
-# mode = "SQL"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-# mainline()
+mode = "SQL"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = [""]  # files
+mainline()
 
-# mode = "txt"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = ["mbox, name"]  # files
-# mainline()
+mode = "txt"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = ["mbox, name"]  # files
+mainline()
 
-# mode = "ahk"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-# mainline()
+mode = "ahk"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = [""]  # files
+mainline()
 
-# mode = "mdown"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-# mainline()
+mode = "mdown"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = [""]  # files
+mainline()
 
-# mode = "markdown"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-# mainline()
+mode = "markdown"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = [""]  # files
+mainline()
 
-# mode = "data"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-# mainline()
+mode = "data"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = [""]  # files
+mainline()
 
-# mode = "csv"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-# mainline()
+mode = "csv"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = [""]  # files
+mainline()
 
-# mode = "html"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-# mainline()
+mode = "html"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = [""]  # files
+mainline()
 
-# mode = "htm"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
-# mainline()
+mode = "htm"
+dirNameInput = "Z:\SharedA\Python\Projects"
+dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+taglist1 = [""]  # files
+mainline()
+
+# %%
