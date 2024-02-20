@@ -6,7 +6,7 @@ import time
 # *****************************************************************************
 # 2024-01-25 | First Version of program
 # *****************************************************************************
-def getListOfFiles(dirNameInput, taglist1, excludefile, includepath, excludepath):
+def getListOfFiles(dirNameInput):
     the_path_list = []
     allFiles = []
     listOfFile = os.listdir(dirNameInput)
@@ -14,35 +14,51 @@ def getListOfFiles(dirNameInput, taglist1, excludefile, includepath, excludepath
         fullPath = os.path.join(dirNameInput, entry)
         the_path_list.append(fullPath)
         if os.path.isdir(fullPath):
-            allFiles = allFiles + getListOfFiles(
-                fullPath, taglist1, excludefile, includepath, excludepath
-            )
+            allFiles = allFiles + getListOfFiles(fullPath)
         else:
             filename, file_extension = os.path.splitext(entry)
             result = {}
-            for tag in taglist1:
-                result[tag] = 0
+            # tags are now a or condition comment out and condition
+            # for includeName1 in includefile:
+            #     result[includeName1] = 0
+            validfilename = False
             if file_extension == inputFileExtension:
-                validfilename = False
-                for include1 in includepath:
-                    if include1.lower() in fullPath.lower():
+                # if includepath empty
+                if not includepath:
+                    validfilename = True
+                else:
+                    for includeName2 in includepath:
+                        if includeName2.lower() in fullPath.lower():
+                            validfilename = True
+                if validfilename == True:
+                    validfilename = False
+                    # if includefile empty
+                    if not includefile:
                         validfilename = True
-                for exclude2 in excludepath:
-                    if exclude2.lower() in fullPath.lower():
-                        validfilename = False
-                for exclude1 in excludefile:
-                    if exclude1 in filename:
-                        validfilename = False
+                    else:
+                        for includeName1 in includefile:
+                            if includeName1.lower() in filename.lower():
+                                validfilename = True
+                        # tags are now a or condition comment out and condition
+                        # result[includeName1] += 1
+                        # allfileFound = True
+                        # for tag in result:
+                        #     if result[tag] == 0:
+                        #         allfileFound = False
+                if validfilename == True:
+                    # if excludepath has entry
+                    if excludepath:
+                        for excludeName1 in excludepath:
+                            if excludeName1.lower() in fullPath.lower():
+                                validfilename = False
+                if validfilename == True:
+                    # if excludefile has entry
+                    if excludefile:
+                        for excludeName2 in excludefile:
+                            if excludeName2 in filename:
+                                validfilename = False
                 if validfilename:
-                    for tag in taglist1:
-                        if tag.lower() in filename.lower():
-                            result[tag] += 1
-                    alltagsfound = True
-                    for tag in result:
-                        if result[tag] == 0:
-                            alltagsfound = False
-                    if alltagsfound:
-                        allFiles.append(fullPath)
+                    allFiles.append(fullPath)
     return allFiles
 
 
@@ -50,132 +66,168 @@ def processFileMain(allFilesMain):
     # indicate last written was P1block or P2block
     # P1BlockModeOn = False
     # headerWritten = False
-    BlockTypeTid5  = '# ~~ '
-    BlockTypeH1d5  = '# +++'
-    BlockTypeH2d5  = '# ++ '
-    BlockTypeEqu5  = '# == '
-    BlockTypePer4  = "# %%"
-    BlockTypeNeg5  = "# -- "
+    # (# == - [ ]) checkbox    (#c/) anywhere in line tag
+    BlockTypeTid5 = "# ~~ "  # headers
+    BlockTypeP3d5 = "# +++"  # level 1
+    BlockTypeP2d5 = "# ++ "  # level 2
+    BlockTypePec4 = "# %%"  # level 3
+    BlockTypeN2d5 = "# -- "  # level 3
+    BlockTypeN3d5 = "# ---"  # level 4
+    BlockTypeEqu5 = "# == "  # remove
     if runMod == "Python":
         extname = ".py"
         P1block = "```python"
         P2block = "```"
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeNeg5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "Jupyter":
         extname = ".ipynb"
         P1block = "```python"
         P2block = "```"
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeNeg5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "SQL":
         extname = ".sql"
         P1block = "```sql"
         P2block = "```"
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeTid5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "txt":
         extname = ".txt"
-        P1block = "___"
+        P1block = ""
         P2block = ""
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeTid5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "ahk":
         extname = ".ahk"
         P1block = "```c"
         P2block = "```"
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeTid5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "mdown":
         extname = ".mdown"
         P1block = ""
         P2block = ""
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeTid5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "markdown":
         extname = ".markdown"
         P1block = ""
         P2block = ""
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeTid5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
+    elif runMod == "md":
+        extname = ".md"
+        P1block = ""
+        P2block = ""
+        blockHeaderTid5 = BlockTypeTid5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
+        blockHeaderEqu5 = BlockTypeEqu5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "data":
         extname = ".data"
         P1block = ""
         P2block = ""
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeTid5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "csv":
         extname = ".csv"
         P1block = ""
         P2block = ""
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeTid5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "html":
         extname = ".html"
         P1block = "```python"
         P2block = "```"
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeTid5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "htm":
         extname = ".htm"
         P1block = "```python"
         P2block = "```"
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeTid5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
+    elif runMod == "xlsx":
+        extname = ".xlsx"
+        P1block = "```python"
+        P2block = "```"
+        blockHeaderTid5 = BlockTypeTid5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
+        blockHeaderEqu5 = BlockTypeEqu5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     else:
         P1block = "```python"
         P2block = "```"
         extname = ".py"
         blockHeaderTid5 = BlockTypeTid5
-        blockHeaderH1d5 = BlockTypeH1d5
-        blockHeaderH2d5 = BlockTypeH2d5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
         blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPer4 = BlockTypePer4
-        blockHeaderNeg5 = BlockTypeNeg5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
 
     for programName in allFilesMain:
         blockCount = 0
@@ -191,23 +243,53 @@ def processFileMain(allFilesMain):
         print("fullfilename=", fullfilename)
 
         with open(programName) as filei:
-            if extname in [".py",".ipynb"]:
+            # may not need .ipynb for now leaving 2024-02-13
+            if extname in [".py", ".ipynb"]:
                 processMod = "Python"
                 extname = ".py"
             else:
                 processMod = runMod
-            line = filei.readline()
-            if blockHeaderPer4 == line[0:4]:
+            if extname not in [".xlsx"]:
                 line = filei.readline()
-                if blockHeaderTid5 == line[0:5]:
-                    if ("C:\\" in line or "H:\\" in line or "Z:\\" in line):
-                        processMod = "Jupyter"
-                        extname = ".ipynb"
+                # if sql comment strip comment so processed like python
+                # if sql comment check further
+                if line[0:4] == "-- #":
+                    if line[3:8] in [
+                        "# ~~ ",
+                        "# +++",
+                        "# ++ ",
+                        "# == ",
+                        "# %% ",
+                        "# -- ",
+                    ]:
+                        line = line[3:].rstrip() + "\n"
+                if blockHeaderPec4 == line[0:4]:
+                    # if nothing on line read next
+                    if bool(line[5:].strip()):
+                        bsk = 0
+                    else:
+                        line = filei.readline()
+                        # if sql comment strip comment so processed like python
+                        if line[0:4] == "-- #":
+                            if line[3:8] in [
+                                "# ~~ ",
+                                "# +++",
+                                "# ++ ",
+                                "# == ",
+                                "# %% ",
+                                "# -- ",
+                            ]:
+                                line = line[3:].rstrip() + "\n"
+                        if blockHeaderTid5 == line[0:5]:
+                            if "C:\\" in line or "H:\\" in line or "Z:\\" in line:
+                                processMod = "Jupyter"
+                                extname = ".ipynb"
+                # block runMod Jupyter python from being processed runMod Python
+                #       only time these two cannot match
+                if runMod != processMod:
+                    continue
 
-            if runMod != processMod:
-                continue
-
-            if processMod == "Jupyter": 
+            if processMod == "Jupyter":
                 dirNameInputSplit = line[5:-1].split("\\")
                 dirname1 = dirNameInputSplit[-1]
                 dirname2 = dirname1.split(sep=".")
@@ -215,6 +297,17 @@ def processFileMain(allFilesMain):
                 dirNameInputSplit.pop()
                 dirNameInput = "\\".join(dirNameInputSplit)
                 line = filei.readline()
+                # if sql comment strip comment so processed like python
+                if line[0:4] == "-- #":
+                    if line[3:8] in [
+                        "# ~~ ",
+                        "# +++",
+                        "# ++ ",
+                        "# == ",
+                        "# %% ",
+                        "# -- ",
+                    ]:
+                        line = line[3:].rstrip() + "\n"
             else:
                 dirNameInputSplit = dirNameInput.split("\\")
 
@@ -237,7 +330,7 @@ def processFileMain(allFilesMain):
             # append method build output directory changed
             appendFlag = False
             for dirnodes in dirNameInputSplit:
-                if dirnodes == "Projects":
+                if dirnodes == dirmodeSearch:
                     appendFlag = True
                 if appendFlag == True:
                     dirNameOutputbase.append(dirnodes)
@@ -245,7 +338,6 @@ def processFileMain(allFilesMain):
             #     # if dirnodes not in ["Z:", "SharedA", "Python"]:
             #     if dirnodes not in ["Z:", "SharedA", "C:", "Users", "DDD2", "Documents", "Python", "2data"]:
             #         dirNameOutputbase.append(dirnodes)
-
             s1 = "\\"
             dirNameOutputFinal = s1.join(dirNameOutputbase)
             os.makedirs(dirNameOutputFinal, exist_ok=True)
@@ -255,20 +347,22 @@ def processFileMain(allFilesMain):
             fileo = open(fileOutput, "a")
 
             clipTempList = clipOutputForward.rstrip().split("/")
-            i = 0
             clipTempList1 = []
-            for clip in clipTempList:
-                if i >= 4 and i <= 10:
-                    if extname not in clip:
-                        clipTempList1.append(clip)
-                i += 1
+            appendFlag = False
+            for dirnodes in clipTempList:
+                # this check is reversed to block main dir from being appended
+                if appendFlag == True:
+                    clipTempList1.append(dirnodes)
+                if dirnodes == dirmodePrint:
+                    appendFlag = True
             clipTempList2 = "/".join(clipTempList1)
 
             fileo.write(f"# 🟩 {fullfilename}\n")
             fileo.write(f"vspath::           {clipOutputForward}\n")
+            fileo.write(f"explorerpath:: {clipOutputFile}\n")
             fileo.write(f"vsfolder::         {clipTempList2}\n")
             fileo.write(
-                f"vsext::              {extname}   |  **inputext::** {inputFileExtension}   |   [[CodeVault Code]]\n"
+                f"vsext::              {extname}   |  **inputext::** {inputFileExtension}   |   [[CodeVault Code]]  |  [[$MyTags]]\n"
             )
             fileo.write(f"runMod::         {runMod}\n")
             fileo.write(f"vsfilename::     {clipOutputFile}/{fullfilename}{extname}\n")
@@ -289,6 +383,9 @@ def processFileMain(allFilesMain):
             fileo.write(f"vssearch::        {clipOutputBackward}\n")
 
             autoTagListTotal = []
+            if extname in [".xlsx"]:
+                continue
+
             while line:
                 if bool(line.strip()):  # block empty lines
                     linelist = line.split()
@@ -298,24 +395,15 @@ def processFileMain(allFilesMain):
                         fileo.write("vstags::          `=this.file.tags`\n")
                         fileo.write("___\n")
 
-                    # check if sql comment
-                    if "-- com ".lower() == line[0:7].lower(): 
-                        if lineCount == 0:
-                            if line[7:8] in ['!', '?', '$']:
-                                vspriority = line[7:8]
-                            else:
-                                vspriority = ""
-                            fileo.write(f"vscomment::  {line[7:]}")
-                            fileo.write(f"vspriority:: {vspriority}\n")
-                            fileo.write(f"___\n")
                     # check if python / sql tag
-                    elif line[0:3] == '#c/' or line [0:6] == '-- #c/':
-                        # write cooment line if in code block
-                        if P1BlockModeOn:
-                            fileo.write(line.rstrip() + "\n")
-                        if P1BlockModeOn:
-                            fileo.write(f"{P2block}\n")
-                            P1BlockModeOn = False
+                    if "#c/" in line:
+                        # write comment line if in code block and code block being used
+                        if P1block != "":
+                            if P1BlockModeOn:
+                                fileo.write(line.rstrip() + "\n")
+                            if P1BlockModeOn:
+                                fileo.write(f"{P2block}\n")
+                                P1BlockModeOn = False
                         for word in linelist:
                             if word not in autoTagListTotal:
                                 if "#c/" in word:
@@ -327,31 +415,36 @@ def processFileMain(allFilesMain):
                             fileo.write(" \n")
                             autoTagListTotal = []
                     elif blockHeaderTid5 == line[0:5]:
+                        # process comments
                         if lineCount == 0:
-                            if line[5:6] in ['!', '?', '$']:
+                            if line[5:6] in ["!", "?", "$"]:
                                 vspriority = line[5:6]
                             else:
                                 vspriority = ""
                             fileo.write(f"vscomment::  {line[5:]}")
                             fileo.write(f"vspriority:: {vspriority}\n")
                             fileo.write(f"___\n")
-                    elif blockHeaderH1d5 == line[0:5]:
+                    elif blockHeaderP3d5 == line[0:5]:
                         if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
                             P1BlockModeOn = False
                         fileo.write("# 🟩" + line[5:].rstrip() + "\n")
-                    elif blockHeaderH2d5 == line[0:5]:
+                    elif blockHeaderP2d5 == line[0:5]:
                         if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
                             P1BlockModeOn = False
                         fileo.write("## 🟪" + line[5:].rstrip() + "\n")
+                    elif blockHeaderN3d5 == line[0:5]:
+                        if P1BlockModeOn:
+                            fileo.write(f"{P2block}\n")
+                            P1BlockModeOn = False
+                        fileo.write("#### 🟠" + line[5:].rstrip() + "\n")
                     elif blockHeaderEqu5 == line[0:5]:
                         if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
                             P1BlockModeOn = False
                         fileo.write(line[5:].rstrip() + "\n")
-                    elif blockHeaderPer4 == line[0:4] or \
-                         blockHeaderNeg5 == line[0:5]:
+                    elif blockHeaderPec4 == line[0:4] or blockHeaderN2d5 == line[0:5]:
                         if bool(line[5:].strip()):
                             if len(autoTagListTotal) > 0:
                                 if P1BlockModeOn:
@@ -391,7 +484,7 @@ def processFileMain(allFilesMain):
                         fileo.write(line.rstrip() + "\n")
 
                         # exclude comment lines from auto tagging
-                        if line.strip()[0] not in ["'", "\"", "#"]:
+                        if line.strip()[0] not in ["'", '"', "#"]:
                             for tag in autoTagListEntry:
                                 if tag.lower() in line.lower():
                                     tagtemp = "#c/i/" + tag.lower()
@@ -407,6 +500,16 @@ def processFileMain(allFilesMain):
                                     {basefilename} {line}, {blockCount}"
                             )
                 line = filei.readline()
+                if line[0:4] == "-- #":
+                    if line[3:8] in [
+                        "# ~~ ",
+                        "# +++",
+                        "# ++ ",
+                        "# == ",
+                        "# %% ",
+                        "# -- ",
+                    ]:
+                        line = line[3:].rstrip() + "\n"
                 lineCount += 1
         if P1BlockModeOn:
             fileo.write(f"{P2block}\n")
@@ -443,7 +546,10 @@ def mainline():
         mainFileExtension = ".mdown"
     elif runMod == "markdown":
         inputFileExtension = ".markdown"
-        mainFileExtension = ".markdwon"
+        mainFileExtension = ".markdown"
+    elif runMod == "md":
+        inputFileExtension = ".md"
+        mainFileExtension = ".md"
     elif runMod == "data":
         inputFileExtension = ".data"
         mainFileExtension = ".data"
@@ -456,6 +562,9 @@ def mainline():
     elif runMod == "htm":
         inputFileExtension = ".htm"
         mainFileExtension = ".htm"
+    elif runMod == "xlsx":
+        inputFileExtension = ".xlsx"
+        mainFileExtension = ".xlsx"
     else:
         inputFileExtension = ".zzz"
         mainFileExtension = ".zzz"
@@ -466,7 +575,7 @@ def mainline():
     print("Program Location  :", programLocation)
     print("Input   Directory :", dirNameInput)
     print("Output  Direcotry :", dirNameOutput)
-    print("Include File List :", taglist1)
+    print("Include File List :", includefile)
     print("Exclude File List :", excludefile)
     print("Include File Path :", includepath)
     print("Exclude File Path :", excludepath)
@@ -478,13 +587,11 @@ def mainline():
     print("------------------:")
     print("FILE LIST SEARCHED:")
     print("------------------:")
-    print(taglist1)
+    print(includefile)
     print("------------------:")
 
     allFilesMain = []
-    allFilesMain = getListOfFiles(
-        dirNameInput, taglist1, excludefile, includepath, excludepath
-    )
+    allFilesMain = getListOfFiles(dirNameInput)
 
     processFileMain(allFilesMain)
     print("------------------------------------- ")
@@ -494,19 +601,6 @@ def mainline():
 #
 # Main:
 #
-excludefile = [
-    "@",
-    "$My",
-    "2023-",
-    "2022-",
-    "2021-",
-    "excalidraw",
-    "excalibrain",
-    "obsidian0",
-    "copy",
-    "backup",
-]
-
 includepath = [
     "CrashBook",
     "CrashCourse",
@@ -522,114 +616,246 @@ includepath = [
     "Data",
     "Repos",
 ]
-excludepath = [
-    "archive",
+includefile = []
+
+excludepath = ["archive", "backup", "test"]
+
+excludefile = [
+    "@",
+    "$My",
+    "2023-",
+    "2022-",
+    "2021-",
+    "excalidraw",
+    "excalibrain",
+    "obsidian0",
+    "copy",
     "backup",
-    "test",
 ]
-# fmt: off
-autoTagListEntry = ["dictionary","dictreader","sql","sqlite","argv","dataframe",
-                    "derekbanas"
+
+autoTagListEntry = [
+    "dictionary",
+    "dictreader",
+    "sql",
+    "sqlite",
+    "argv",
+    "dataframe",
+    "derekbanas",
 ]
-# fmt: on
 
 curr_time = time.strftime("%H:%M:%S", time.localtime())
 allFilesMain = []
 
+# fmt: off
 # ************************************************************
 #   Remote
 # ************************************************************
 # runMod = "Python"
+# includepath = ["Projects","PythonExercises"]
+# includefile = ["Exercise0"]
+# excludepath = ["archive", "backup", "test"]
+# excludefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
 # dirNameInput = "C:\\2data\\Python\\Projects"
 # dirNameOutput = "H:\\Backup\\Obsidian\\CodeVault"
 # programLocation = "H:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
 # mainline()
 
 # runMod = "Jupyter"
+# includepath = ["Projects"]
+# includefile = []
+# excludepath = ["archive", "backup", "test"]
+# excludefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
 # dirNameInput = "C:\\2data\\Python\\Projects"
 # dirNameOutput = "H:\\Backup\\Obsidian\\CodeVault"
 # programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# taglist1 = [""]  # files
+# mainline()
+
+# runMod = "markdown"
+# includepath = []
+# includefile = []
+# excludepath = ["Images", "InfoSelect", "Obsidian","Python","Typora","Zotero"]
+# excludefile = []
+# dirmodeSearch = "2data"
+# dirmodePrint = "2data"
+# dirNameInput = "C:\\2data"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
+
+# runMod = "xlsx"
+# includepath = []
+# includefile = []
+# excludepath = ["Images", "InfoSelect", "Obsidian","Typora","Zotero","ARFB","Retirement","Python"]
+# excludefile = []
+# dirmodeSearch = "2data"
+# dirmodePrint = "2data"
+# dirNameInput = "C:\\2data"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
+
+# runMod = "xlsx"
+# includepath = []
+# includefile = []
+# excludepath = ["z_python-for-excel"]
+# excludefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "C:\\2data\\Python\\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
 # mainline()
 
 # ************************************************************
-#   Main
+#   Main Execution
 # ************************************************************
+includepath = ["PythonforExcel","PythonExercises","SQLite", "CS50P","Repos"]
+includepath = ["PythonforExcel","PythonExercises","SQLite", "CS50P","Repos"]
+includefile = []
+excludepath = ["archive", "backup", "test"]
+excludefile = ["copy","backup"]
+autoTagListEntry = ["dictionary","dictreader","sql","sqlite","argv","dataframe",
+"derekbanas"]
+
 runMod = "Python"
+includefile = ["Exercise0"]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
 dirNameInput = "Z:\SharedA\Python\Projects"
 dirNameOutput = "H:\Backup\Obsidian\CodeVault"
 programLocation = "Z:/SharedA/Repos/Utilities/formatjupyter.py"
-taglist1 = [""]  # files
 mainline()
 
 runMod = "Jupyter"
+includefile = []
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
 dirNameInput = "Z:\SharedA\Python\Projects"
 dirNameOutput = "H:\Backup\Obsidian\CodeVault"
 programLocation = "Z:/SharedA/Repos/Utilities/formatjupyter.py"
-taglist1 = [""]  # files
 mainline()
 
-runMod = "SQL"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = [""]  # files
-mainline()
-
-runMod = "txt"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = [""]  # files
-mainline()
-
-runMod = "ahk"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = [""]  # files
-mainline()
-
-runMod = "mdown"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = [""]  # files
-mainline()
-
+includepath = ["SharedA"]
+includefile = []
+excludepath = ["Images", "InfoSelect", "Obsidian","Python","Typora","Zotero"]
+excludefile = []
 runMod = "markdown"
-dirNameInput = "Z:\SharedA\Python\Projects"
+dirmodeSearch = "SharedA"
+dirmodePrint = "SharedA"
+dirNameInput = "Z:\SharedA"
 dirNameOutput = "H:\Backup\Obsidian\CodeVault"
 programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = [""]  # files
+includefile = []  # files
 mainline()
 
-runMod = "data"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = [""]  # files
-mainline()
+# ************************************************************
+#   Other
+# ************************************************************
+# runMod = "SQL"
+# includefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
 
-runMod = "csv"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = [""]  # files
-mainline()
+# runMod = "txt"
+# includefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
 
-runMod = "html"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = [""]  # files
-mainline()
+# runMod = "ahk"
+# includefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
 
-runMod = "htm"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-taglist1 = [""]  # files
-mainline()
+# runMod = "mdown"
+# includefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
 
+# runMod = "data"
+# includefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
+
+# runMod = "csv"
+# includefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
+
+# runMod = "html"
+# includefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# includefile = []  # files
+# mainline()
+
+# runMod = "htm"
+# includefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
+
+# ************************************************************
+#   Miscellaneous
+# ************************************************************
+# runMod = "xlsx"
+# includepath = []
+# includefile = []
+# excludepath = ["Images", "InfoSelect", "Obsidian","Typora","Zotero","ARFB","Retirement","Python"]
+# excludefile = []
+# dirmodeSearch = "SharedA"
+# dirmodePrint = "Z:"
+# dirNameInput = "Z:\SharedA"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
+
+# runMod = "xlsx"
+# includepath = []
+# includefile = []
+# excludepath = ["z_python-for-excel"]
+# excludefile = []
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# dirNameInput = "Z:\SharedA\Python\Projects"
+# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
+# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
+# mainline()
+
+# fmt: on
+
+mainline()
+# %%
