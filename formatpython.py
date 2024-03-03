@@ -1,6 +1,7 @@
 # %%
 import os
 import time
+from datetime import datetime
 
 
 # *****************************************************************************
@@ -67,9 +68,26 @@ def processFileMain(allFilesMain):
     # P1BlockModeOn = False
     # headerWritten = False
     # (# == - [ ]) checkbox    (#c/) anywhere in line tag
+    global cntFileRead
+    global cntFileBlocked
+    global cntFileBlocked1
+    global cntFileBlocked2
+    global cntFileBlocked3
+    global cntFileBlocked4
+    global cntFileProcessed
+
+    global clipTempList2
+    global tempListT1
+    global tempListJoin
+
+    # documentation
+    # if sql comment strip comment so processed like python
+    # -- # modified to #
+    #
     BlockTypeTid5 = "# ~~ "  # headers
-    BlockTypeP3d5 = "# +++"  # level 1
-    BlockTypeP2d5 = "# ++ "  # level 2
+
+    BlockTypeP3d5 = "# ++ "  # level 1
+    BlockTypeP2d5 = "# +++"  # level 2
     BlockTypePec4 = "# %%"  # level 3
     BlockTypeN2d5 = "# -- "  # level 3
     BlockTypeN3d5 = "# ---"  # level 4
@@ -230,6 +248,65 @@ def processFileMain(allFilesMain):
         blockHeaderN3d5 = BlockTypeN3d5
 
     for programName in allFilesMain:
+
+        # Specify the file path
+        file_path = programName
+        # Get the creation and modification datetime of the file
+        stat_info = os.stat(file_path)
+        creation_time = datetime.fromtimestamp(stat_info.st_ctime)
+        modification_time = datetime.fromtimestamp(stat_info.st_mtime)
+        if modification_time.month < 10:
+            mod_month = "0" + str(modification_time.month)
+        else:
+            mod_month = str(modification_time.month)
+        if modification_time.day < 10:
+            mod_day = "0" + str(modification_time.day)
+        else:
+            mod_day = str(modification_time.day)
+        if modification_time.hour < 10:
+            mod_hour = "0" + str(modification_time.hour)
+        else:
+            mod_hour = str(modification_time.hour)
+        if modification_time.minute < 10:
+            mod_minute = "0" + str(modification_time.minute)
+        else:
+            mod_minute = str(modification_time.minute)
+        if modification_time.second < 10:
+            mod_second = "0" + str(modification_time.second)
+        else:
+            mod_second = str(modification_time.second)
+        mod_date = (
+            str(modification_time.year)
+            + mod_month
+            + mod_day
+            + mod_hour
+            + mod_minute
+            + mod_second
+        )
+
+        cntFileRead += 1
+        if updateMode == True:
+            if checkModificationDate == True:
+                if mod_date >= mod_date_last_checked:
+                    print("allowed")
+                    print("programName           = ", programName)
+                    print("mod_date_last_checked = ", mod_date_last_checked)
+                    print("mod_date program      = ", mod_date)
+                else:
+                    cntFileBlocked += 1
+                    cntFileBlocked1 += 1
+                    print("***********************")
+                    print("***     BLOCKED 1   ***")
+                    print("***********************")
+                    continue
+        else:
+            cntFileBlocked += 1
+            cntFileBlocked2 += 1
+            print("***********************")
+            print("***     BLOCKED 2   ***")
+            print("***********************")
+            continue
+
         blockCount = 0
         lineCount = 0
         P1BlockModeOn = False
@@ -252,15 +329,15 @@ def processFileMain(allFilesMain):
             if extname not in [".xlsx"]:
                 line = filei.readline()
                 # if sql comment strip comment so processed like python
-                # if sql comment check further
                 if line[0:4] == "-- #":
                     if line[3:8] in [
                         "# ~~ ",
-                        "# +++",
                         "# ++ ",
+                        "# +++",
                         "# == ",
                         "# %% ",
                         "# -- ",
+                        "# ---",
                     ]:
                         line = line[3:].rstrip() + "\n"
                 if blockHeaderPec4 == line[0:4]:
@@ -273,24 +350,34 @@ def processFileMain(allFilesMain):
                         if line[0:4] == "-- #":
                             if line[3:8] in [
                                 "# ~~ ",
-                                "# +++",
                                 "# ++ ",
+                                "# +++",
                                 "# == ",
                                 "# %% ",
                                 "# -- ",
+                                "# ---",
                             ]:
                                 line = line[3:].rstrip() + "\n"
-                        if blockHeaderTid5 == line[0:5]:
-                            if "C:\\" in line or "H:\\" in line or "Z:\\" in line:
+                        if "# && " == line[0:5]:
+                            if "Jupyter" in line:
+                                # if "C:\\" in line or "H:\\" in line or "Z:\\" in line: debug
                                 processMod = "Jupyter"
                                 extname = ".ipynb"
                 # block runMod Jupyter python from being processed runMod Python
                 #       only time these two cannot match
                 if runMod != processMod:
+                    cntFileBlocked += 1
+                    cntFileBlocked3 += 1
+                    print("***********************")
+                    print(f"** runMod {runMod} processMod {processMod}")
+                    print("***     BLOCKED 3   ***")
+                    print("***********************")
                     continue
 
+            cntFileProcessed += 1
             if processMod == "Jupyter":
-                dirNameInputSplit = line[5:-1].split("\\")
+                # dirNameInputSplit = line[5:-1].split("\\") debug
+                dirNameInputSplit = programName.split("\\")
                 dirname1 = dirNameInputSplit[-1]
                 dirname2 = dirname1.split(sep=".")
                 fullfilename = "".join(dirname2[0])
@@ -301,11 +388,12 @@ def processFileMain(allFilesMain):
                 if line[0:4] == "-- #":
                     if line[3:8] in [
                         "# ~~ ",
-                        "# +++",
                         "# ++ ",
+                        "# +++",
                         "# == ",
                         "# %% ",
                         "# -- ",
+                        "# ---",
                     ]:
                         line = line[3:].rstrip() + "\n"
             else:
@@ -334,10 +422,6 @@ def processFileMain(allFilesMain):
                     appendFlag = True
                 if appendFlag == True:
                     dirNameOutputbase.append(dirnodes)
-            # for dirnodes in dirNameInputSplit:
-            #     # if dirnodes not in ["Z:", "SharedA", "Python"]:
-            #     if dirnodes not in ["Z:", "SharedA", "C:", "Users", "DDD2", "Documents", "Python", "2data"]:
-            #         dirNameOutputbase.append(dirnodes)
             s1 = "\\"
             dirNameOutputFinal = s1.join(dirNameOutputbase)
             os.makedirs(dirNameOutputFinal, exist_ok=True)
@@ -356,15 +440,15 @@ def processFileMain(allFilesMain):
                 if dirnodes == dirmodePrint:
                     appendFlag = True
             clipTempList2 = "/".join(clipTempList1)
-
-            fileo.write(f"# 🟩 {fullfilename}\n")
-            fileo.write(f"vspath::           {clipOutputForward}\n")
-            fileo.write(f"explorerpath:: {clipOutputFile}\n")
-            fileo.write(f"vsfolder::         {clipTempList2}\n")
-            fileo.write(
-                f"vsext::              {extname}   |  **inputext::** {inputFileExtension}   |   [[CodeVault Code]]  |  [[$MyTags]]\n"
-            )
+            # insert frontmatter marking
+            fileo.write(f"---\n")
+            fileo.write(f"obsidianUIMode: preview\n")
             fileo.write(f"runMod::         {runMod}\n")
+            tempListT1 = clipTempList2.split("/")
+            tempListJoin = "".join(tempListT1)
+            fileo.write(f"expath::           {clipOutputFile}\n")
+            fileo.write(f"vspath::           {clipOutputForward}\n")
+            fileo.write(f"vssearch::        {clipOutputBackward}\n")
             fileo.write(f"vsfilename::     {clipOutputFile}/{fullfilename}{extname}\n")
             if processMod == "Jupyter":
                 clipInputList = programName.rstrip().split("\\")
@@ -380,10 +464,19 @@ def processFileMain(allFilesMain):
                 clipOutputFileTemp[1] = ".ipynb"
                 clipOutputFileTemp = "".join(clipOutputFileTemp)
                 fileo.write(f"jupytermain::   {clipOutputFileTemp}\n")
-            fileo.write(f"vssearch::        {clipOutputBackward}\n")
-
+            # insert frontmatter marking
+            fileo.write(f"---\n")
+            fileo.write(f"# 🔵 {fullfilename}\n")
+            fileo.write("___\n")
+            fileo.write(
+                f"vsext::              {extname}   |  **inputext::** {inputFileExtension}   |   [[CodeVaultCode]]  |  [[$MyTags]]\n"
+            )
             autoTagListTotal = []
             if extname in [".xlsx"]:
+                print("***********************")
+                print("***     BLOCKED 4   ***")
+                print("***********************")
+                cntFileBlocked4 += 1
                 continue
 
             while line:
@@ -391,9 +484,9 @@ def processFileMain(allFilesMain):
                     linelist = line.split()
 
                     # write vstag as top line
-                    if lineCount == 0:
-                        fileo.write("vstags::          `=this.file.tags`\n")
-                        fileo.write("___\n")
+                    if blockHeaderTid5 != line[0:5]:
+                        if lineCount == 0:
+                            createTagHeader(fileo)
 
                     # check if python / sql tag
                     if "#c/" in line:
@@ -421,9 +514,9 @@ def processFileMain(allFilesMain):
                                 vspriority = line[5:6]
                             else:
                                 vspriority = ""
-                            fileo.write(f"vscomment::  {line[5:]}")
                             fileo.write(f"vspriority:: {vspriority}\n")
-                            fileo.write(f"___\n")
+                            fileo.write(f"vscomment::  {line[5:]}")
+                            createTagHeader(fileo)
                     elif blockHeaderP3d5 == line[0:5]:
                         if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
@@ -434,11 +527,12 @@ def processFileMain(allFilesMain):
                             fileo.write(f"{P2block}\n")
                             P1BlockModeOn = False
                         fileo.write("## 🟪" + line[5:].rstrip() + "\n")
-                    elif blockHeaderN3d5 == line[0:5]:
+                    elif blockHeaderN3d5 in line:
                         if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
                             P1BlockModeOn = False
-                        fileo.write("#### 🟠" + line[5:].rstrip() + "\n")
+                        cPos = line.index(blockHeaderN3d5)
+                        fileo.write("#### ✔" + line[cPos + 5 :].rstrip() + "\n")
                     elif blockHeaderEqu5 == line[0:5]:
                         if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
@@ -469,6 +563,7 @@ def processFileMain(allFilesMain):
                             fileo.write(f"[{blockCount}]\n")
                             headerWritten = True
                     else:
+                        # print error message for these
                         if (
                             line[0:3] == "#--"
                             or line[0:3] == "#++"
@@ -487,7 +582,7 @@ def processFileMain(allFilesMain):
                         if line.strip()[0] not in ["'", '"', "#"]:
                             for tag in autoTagListEntry:
                                 if tag.lower() in line.lower():
-                                    tagtemp = "#c/i/" + tag.lower()
+                                    tagtemp = "#c/" + tag.lower()
                                     if tagtemp not in autoTagListTotal:
                                         autoTagListTotal.append(tagtemp)
 
@@ -499,15 +594,19 @@ def processFileMain(allFilesMain):
                                 f"invalid TAG format found on line \
                                     {basefilename} {line}, {blockCount}"
                             )
+                else:
+                    fileo.write(line.rstrip() + "\n")
                 line = filei.readline()
+                # if sql comment strip comment so processed like python mainline
                 if line[0:4] == "-- #":
                     if line[3:8] in [
                         "# ~~ ",
-                        "# +++",
                         "# ++ ",
+                        "# +++",
                         "# == ",
                         "# %% ",
                         "# -- ",
+                        "# ---",
                     ]:
                         line = line[3:].rstrip() + "\n"
                 lineCount += 1
@@ -521,6 +620,35 @@ def processFileMain(allFilesMain):
             fileo.write(" \n")
             autoTagListTotal = []
         fileo.close()
+
+
+def createTagHeader(fileo):
+    fileo.write(f"___\n")
+    fileo.write(f"vsfolder::         {clipTempList2}\n")
+    fileo.write(f"fbasetags::         #f/base/{tempListT1[0]}\n")
+    fileo.write(f"fdirtags::          #f/dir/{tempListJoin}\n")
+    fileo.write(f"ftypetags::         #f/type/{runMod}\n")
+    fileo.write(f"\n")
+    fileo.write(f"```dataview\n")
+    fileo.write(
+        f'TABLE WITHOUT ID (tag + "(" + length(rows.file.link) + ")") AS VStags\n'
+    )
+    fileo.write(f'FROM -"Templates" and -"excalibrain" and -"_ZArchivedNotes"\n')
+    fileo.write(
+        f'Where !contains(file.name,"@") and contains(file.tags,"c/") and contains(file.name, this.file.name)\n'
+    )
+    fileo.write(f"FLATTEN file.etags AS tag GROUP BY tag SORT VStags DESC\n")
+
+    # fileo.write(
+    #     f'TABLE WITHOUT ID filter( file.etags, (x) => !contains(x, "#c/z") AND !contains(x,\n'
+    # )
+    # fileo.write(
+    #     f'"#/zdir") ) as VStags FROM -"Templates" and -"excalibrain" and -"_ZArchivedNotes"\n'
+    # )
+    # fileo.write(f"WHERE contains(file.name, this.file.name) SORT etags\n")
+
+    fileo.write(f"```\n")
+    fileo.write(f"___\n")
 
 
 def mainline():
@@ -570,11 +698,10 @@ def mainline():
         mainFileExtension = ".zzz"
 
     print("Current Time is :", curr_time)
-    print("formatpython version 002 Start")
-    print("------------------------------- ")
-    print("Program Location  :", programLocation)
+    print("RunMod          :", runMod)
+    print("================================== ")
     print("Input   Directory :", dirNameInput)
-    print("Output  Direcotry :", dirNameOutput)
+    print("Output  Directory :", dirNameOutput)
     print("Include File List :", includefile)
     print("Exclude File List :", excludefile)
     print("Include File Path :", includepath)
@@ -584,24 +711,86 @@ def mainline():
     print("inputFileExtension:", inputFileExtension)
     print("mainFileExtension :", mainFileExtension)
 
-    print("------------------:")
+    print("==================:")
     print("FILE LIST SEARCHED:")
-    print("------------------:")
+    print("==================:")
     print(includefile)
-    print("------------------:")
+    print("==================:")
 
     allFilesMain = []
     allFilesMain = getListOfFiles(dirNameInput)
 
     processFileMain(allFilesMain)
-    print("------------------------------------- ")
+    print(" ")
     print("formatpython version 002 Termination")
 
 
 #
 # Main:
 #
-includepath = [
+now = datetime.now()
+if now.month < 10:
+    now_month = "0" + str(now.month)
+else:
+    now_month = str(now.month)
+if now.day < 10:
+    now_day = "0" + str(now.day)
+else:
+    now_day = str(now.day)
+if now.hour < 10:
+    now_hour = "0" + str(now.hour)
+else:
+    now_hour = str(now.hour)
+if now.minute < 10:
+    now_minute = "0" + str(now.minute)
+else:
+    now_minute = str(now.minute)
+if now.second < 10:
+    now_second = "0" + str(now.second)
+else:
+    now_second = str(now.second)
+
+cntFileRead = 0
+cntFileProcessed = 0
+cntFileBlocked = 0
+cntFileBlocked1 = 0
+cntFileBlocked2 = 0
+cntFileBlocked3 = 0
+cntFileBlocked4 = 0
+
+# initialization program
+updateMode = True
+checkModificationDate = True
+
+# topPath = "2data"
+# dirNameInputMain = "C:\\2data\\Python\\Projects"
+# dirNameInputRoot = "C:\\2data"
+# dirNameOutputMain = "H:\\Backup\\Obsidian\\CodeVault"
+
+topPath = "SharedA"
+dirNameInputMain = "Z:\SharedA\Python\Projects"
+dirNameInputRoot = "Z:\SharedA"
+dirNameOutputMain = "H:\\Backup\\Obsidian\\CodeVault"
+
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+
+# main program
+fileDateTime = dirNameOutput + "\\" + "Templates\\$modDateTime.md"
+with open(fileDateTime, "r") as reader:
+    mod_date_last_checked = reader.readline()
+
+now_date = str(now.year) + now_month + now_day + now_hour + now_minute + now_second
+
+file1 = open(fileDateTime, "w")
+file1.write(now_date)
+file1.close()
+
+# main variables
+
+includefilemain = []
+
+includepathmain = [
     "CrashBook",
     "CrashCourse",
     "Jupyter",
@@ -616,11 +805,8 @@ includepath = [
     "Data",
     "Repos",
 ]
-includefile = []
 
-excludepath = ["archive", "backup", "test"]
-
-excludefile = [
+excludefilemain = [
     "@",
     "$My",
     "2023-",
@@ -633,229 +819,188 @@ excludefile = [
     "backup",
 ]
 
-autoTagListEntry = [
-    "dictionary",
-    "dictreader",
-    "sql",
-    "sqlite",
+excludepathmain = ["archive", "backup", "test"]
+
+autoTagListEntrymain = [
     "argv",
     "dataframe",
     "derekbanas",
+    "dictionary",
+    "dictreader",
+    "numpy",
+    "sql",
+    "sqlite",
+    "xlwings",
 ]
 
 curr_time = time.strftime("%H:%M:%S", time.localtime())
 allFilesMain = []
 
 # fmt: off
-# ************************************************************
-#   Remote
-# ************************************************************
-# runMod = "Python"
-# includepath = ["Projects","PythonExercises"]
-# includefile = ["Exercise0"]
-# excludepath = ["archive", "backup", "test"]
-# excludefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "C:\\2data\\Python\\Projects"
-# dirNameOutput = "H:\\Backup\\Obsidian\\CodeVault"
-# programLocation = "H:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "Jupyter"
-# includepath = ["Projects"]
-# includefile = []
-# excludepath = ["archive", "backup", "test"]
-# excludefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "C:\\2data\\Python\\Projects"
-# dirNameOutput = "H:\\Backup\\Obsidian\\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "markdown"
-# includepath = []
-# includefile = []
-# excludepath = ["Images", "InfoSelect", "Obsidian","Python","Typora","Zotero"]
-# excludefile = []
-# dirmodeSearch = "2data"
-# dirmodePrint = "2data"
-# dirNameInput = "C:\\2data"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "xlsx"
-# includepath = []
-# includefile = []
-# excludepath = ["Images", "InfoSelect", "Obsidian","Typora","Zotero","ARFB","Retirement","Python"]
-# excludefile = []
-# dirmodeSearch = "2data"
-# dirmodePrint = "2data"
-# dirNameInput = "C:\\2data"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "xlsx"
-# includepath = []
-# includefile = []
-# excludepath = ["z_python-for-excel"]
-# excludefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "C:\\2data\\Python\\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
 
 # ************************************************************
 #   Main Execution
 # ************************************************************
-includepath = ["PythonforExcel","PythonExercises","SQLite", "CS50P","Repos"]
-includepath = ["PythonforExcel","PythonExercises","SQLite", "CS50P","Repos"]
-includefile = []
-excludepath = ["archive", "backup", "test"]
-excludefile = ["copy","backup"]
-autoTagListEntry = ["dictionary","dictreader","sql","sqlite","argv","dataframe",
-"derekbanas"]
 
 runMod = "Python"
-includefile = ["Exercise0"]
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
 dirmodeSearch = "Projects"
 dirmodePrint = "Projects"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatjupyter.py"
 mainline()
 
 runMod = "Jupyter"
-includefile = []
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
 dirmodeSearch = "Projects"
 dirmodePrint = "Projects"
-dirNameInput = "Z:\SharedA\Python\Projects"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatjupyter.py"
 mainline()
 
-includepath = ["SharedA"]
+runMod = "SQL"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "txt"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "ahk"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = ["Python\\Projects"]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "mdown"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "data"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "csv"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "html"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "htm"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "xlsx"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
 includefile = []
-excludepath = ["Images", "InfoSelect", "Obsidian","Python","Typora","Zotero"]
-excludefile = []
-runMod = "markdown"
-dirmodeSearch = "SharedA"
-dirmodePrint = "SharedA"
-dirNameInput = "Z:\SharedA"
-dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-includefile = []  # files
+excludepath = ["archive", "backup", "test","Images", "InfoSelect", 
+               "Obsidian","Typora","Zotero","ARFB",
+               "Retirement",
+               "Python"]
+excludefile = ["copy","backup"]
+excludepath = ["z_python-for-excel"]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
 mainline()
 
-# ************************************************************
-#   Other
-# ************************************************************
-# runMod = "SQL"
-# includefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "txt"
-# includefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "ahk"
-# includefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "mdown"
-# includefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "data"
-# includefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "csv"
-# includefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "html"
-# includefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# includefile = []  # files
-# mainline()
-
-# runMod = "htm"
-# includefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# ************************************************************
-#   Miscellaneous
-# ************************************************************
-# runMod = "xlsx"
-# includepath = []
-# includefile = []
-# excludepath = ["Images", "InfoSelect", "Obsidian","Typora","Zotero","ARFB","Retirement","Python"]
-# excludefile = []
-# dirmodeSearch = "SharedA"
-# dirmodePrint = "Z:"
-# dirNameInput = "Z:\SharedA"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
-
-# runMod = "xlsx"
-# includepath = []
-# includefile = []
-# excludepath = ["z_python-for-excel"]
-# excludefile = []
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# dirNameInput = "Z:\SharedA\Python\Projects"
-# dirNameOutput = "H:\Backup\Obsidian\CodeVault"
-# programLocation = "Z:/SharedA/Repos/Utilities/formatpython.py"
-# mainline()
+runMod = "markdown"
+dirNameInput = dirNameInputRoot
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = []
+includepath = [topPath]
+excludefile = []
+excludepath = ["Images", "InfoSelect", "Obsidian","Python",
+               "Typora",
+               "Zotero"]
+dirmodeSearch = topPath
+dirmodePrint = topPath
+mainline()
 
 # fmt: on
 
-mainline()
-# %%
+print("mod_date_last_checked       = ", mod_date_last_checked)
+print("now_date                    = ", now_date)
+print("updateMode                  = ", updateMode)
+print("checkModificationDate       = ", checkModificationDate)
+print("cntFileBlocked              = ", cntFileBlocked)
+print("cntFileBlocked1 mod_date    = ", cntFileBlocked1)
+print("cntFileBlocked2 updateMode  = ", cntFileBlocked2)
+print("cntFileBlocked3 run/process = ", cntFileBlocked3)
+print("cntFileBlocked4 xlsx        = ", cntFileBlocked4)
+print("cntFileRead                 = ", cntFileRead)
+print("cntFileProcessed            = ", cntFileProcessed)
