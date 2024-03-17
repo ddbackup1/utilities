@@ -103,17 +103,6 @@ def processFileMain(allFilesMain):
         blockHeaderPec4 = BlockTypePec4
         blockHeaderN2d5 = BlockTypeN2d5
         blockHeaderN3d5 = BlockTypeN3d5
-    elif runMod == "Jupyter":
-        extname = ".ipynb"
-        P1block = "```python"
-        P2block = "```"
-        blockHeaderTid5 = BlockTypeTid5
-        blockHeaderP3d5 = BlockTypeP3d5
-        blockHeaderP2d5 = BlockTypeP2d5
-        blockHeaderEqu5 = BlockTypeEqu5
-        blockHeaderPec4 = BlockTypePec4
-        blockHeaderN2d5 = BlockTypeN2d5
-        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "SQL":
         extname = ".sql"
         P1block = "```sql"
@@ -309,6 +298,7 @@ def processFileMain(allFilesMain):
 
         blockCount = 0
         lineCount = 0
+        tagHeaderFlag = False
         P1BlockModeOn = False
         headerWritten = False
         basefilename = os.path.basename(programName)
@@ -362,18 +352,8 @@ def processFileMain(allFilesMain):
                             if "Jupyter" in line:
                                 # if "C:\\" in line or "H:\\" in line or "Z:\\" in line: debug
                                 processMod = "Jupyter"
+                                mainFileExtension = ".ipynb"
                                 extname = ".ipynb"
-                # block runMod Jupyter python from being processed runMod Python
-                #       only time these two cannot match
-                if runMod != processMod:
-                    cntFileBlocked += 1
-                    cntFileBlocked3 += 1
-                    print("***********************")
-                    print(f"** runMod {runMod} processMod {processMod}")
-                    print("***     BLOCKED 3   ***")
-                    print("***********************")
-                    continue
-
             cntFileProcessed += 1
             if processMod == "Jupyter":
                 # dirNameInputSplit = line[5:-1].split("\\") debug
@@ -426,9 +406,7 @@ def processFileMain(allFilesMain):
             dirNameOutputFinal = s1.join(dirNameOutputbase)
             os.makedirs(dirNameOutputFinal, exist_ok=True)
 
-            fileOutput = dirNameOutputFinal + "/" + fullfilename + ".md"
-            fileo = open(fileOutput, "w")
-            fileo = open(fileOutput, "a")
+            tempListT2 = dirNameOutputFinal.split("\\")
 
             clipTempList = clipOutputForward.rstrip().split("/")
             clipTempList1 = []
@@ -440,16 +418,58 @@ def processFileMain(allFilesMain):
                 if dirnodes == dirmodePrint:
                     appendFlag = True
             clipTempList2 = "/".join(clipTempList1)
-            # insert frontmatter marking
-            fileo.write(f"---\n")
-            fileo.write(f"obsidianUIMode: preview\n")
-            fileo.write(f"runMod::         {runMod}\n")
+            clipTempList3 = "".join(clipTempList1)
+
+            if extname == ".mdown":
+                fileOutput = (
+                    dirNameOutputFinal
+                    + "/"
+                    + clipTempList3
+                    + "."
+                    + fullfilename
+                    + "."
+                    + "mdown"
+                    + ".md"
+                )
+                fullfilenametotal = clipTempList3 + "." + fullfilename
+            else:
+                fileOutput = (
+                    dirNameOutputFinal
+                    + "/"
+                    + tempListT2[-1]
+                    + "."
+                    + fullfilename
+                    + ".md"
+                )
+                fullfilenametotal = tempListT2[-1] + "." + fullfilename
+
+            fileo = open(fileOutput, "w")
+            fileo = open(fileOutput, "a")
+
+            # replaced in vspath this originally
+            clipOutputForwardList = clipOutputForward.split("/")
+
             tempListT1 = clipTempList2.split("/")
             tempListJoin = "".join(tempListT1)
-            fileo.write(f"expath::           {clipOutputFile}\n")
-            fileo.write(f"vspath::           {clipOutputForward}\n")
-            fileo.write(f"vssearch::        {clipOutputBackward}\n")
-            fileo.write(f"vsfilename::     {clipOutputFile}/{fullfilename}{extname}\n")
+            clipOutputFileTemp = clipOutputFile.replace(" ", "%20")
+            fullfilenameTemp = fullfilename.replace(" ", "%20")
+            clipOutputBackwardTemp = clipOutputBackward.replace(":", "")
+            clipOutputBackwardTemp = clipOutputBackwardTemp.replace("\\", "/")
+
+            fileo.write(f"---\n")
+            fileo.write(f"filename: {fullfilename}\n")
+            fileo.write(f"dirfolder:          {clipTempList2}\n")
+            fileo.write(f"dirname:        {clipOutputBackwardTemp}\n")
+            fileo.write(f"processMod:         {processMod}\n")
+            fileo.write(
+                f"dateMod:         {mod_date[:8]}.{mod_date[8:12]}.{mod_date[12:-1]}\n"
+            )
+            fileo.write(f"obsidianUIMode: preview\n")
+            if processMod != "Jupyter":
+                fileo.write(f"dirpath:          {clipOutputFileTemp}\n")
+                fileo.write(
+                    f"dirfilename:    {clipOutputFileTemp}/{fullfilenameTemp}{extname}\n"
+                )
             if processMod == "Jupyter":
                 clipInputList = programName.rstrip().split("\\")
                 clipOutputForward = "/".join(clipInputList)
@@ -459,23 +479,34 @@ def processFileMain(allFilesMain):
                 clipOutputFile = (
                     "file:///" + driveLetter.lower() + "%3A" + clipOutputFile[1]
                 )
-                fileo.write(f"jupyterpy::       {clipOutputFile}\n")
+                fileo.write(f"vsjupyterpy:     {clipOutputFile}\n")
+                fileo.write(f"dirpath:          {clipOutputFileTemp}\n")
                 clipOutputFileTemp = clipOutputFile.rstrip().split(".")
                 clipOutputFileTemp[1] = ".ipynb"
                 clipOutputFileTemp = "".join(clipOutputFileTemp)
-                fileo.write(f"jupytermain::   {clipOutputFileTemp}\n")
+                fileo.write(f"dirfilename:  {clipOutputFileTemp}\n")
             # insert frontmatter marking
             fileo.write(f"---\n")
-            fileo.write(f"# 🔵 {fullfilename}\n")
-            fileo.write("___\n")
+            fileo.write(f"# 🔵Ptags:\n")
+            canvasList = clipTempList2.split("/")
+            canvasString = canvasList[-1]
             fileo.write(
-                f"vsext::              {extname}   |  **inputext::** {inputFileExtension}   |   [[CodeVaultCode]]  |  [[$MyTags]]\n"
+                f"**vsext::** {extname} | **inputext::** {inputFileExtension} \
+| **CodeVaultCode:** [[CodeVaultCode]] | **MyTags:** [[$MyTags]]\n"
+            )
+            tempListT1Temp = tempListT1[0].replace(" ", "")
+            tempListJoinTemp = tempListJoin.replace(" ", "")
+            fileo.write(
+                f"**Odir:** [[{tempListJoinTemp}.dir]] \
+| **Opage:** [[{fullfilenametotal}.page]] | **Ocanvas:** [[{canvasString}.canvas]]\n"
             )
             autoTagListTotal = []
             if extname in [".xlsx"]:
                 print("***********************")
                 print("***     BLOCKED 4   ***")
                 print("***********************")
+                tagHeaderFlag = True
+                createTagHeader(fileo, fullfilename, extname, fullfilenametotal)
                 cntFileBlocked4 += 1
                 continue
 
@@ -486,7 +517,10 @@ def processFileMain(allFilesMain):
                     # write vstag as top line
                     if blockHeaderTid5 != line[0:5]:
                         if lineCount == 0:
-                            createTagHeader(fileo)
+                            tagHeaderFlag = True
+                            createTagHeader(
+                                fileo, fullfilename, extname, fullfilenametotal
+                            )
 
                     # check if python / sql tag
                     if "#c/" in line:
@@ -512,11 +546,16 @@ def processFileMain(allFilesMain):
                         if lineCount == 0:
                             if line[5:6] in ["!", "?", "$"]:
                                 vspriority = line[5:6]
+                                fileo.write(f"vspriority:: {vspriority}\n")
+                                fileo.write(f"vscomment::  *{line[7:].rstrip()}* \n")
                             else:
                                 vspriority = ""
-                            fileo.write(f"vspriority:: {vspriority}\n")
-                            fileo.write(f"vscomment::  {line[5:]}")
-                            createTagHeader(fileo)
+                                fileo.write(f"vspriority:: {vspriority}\n")
+                                fileo.write(f"vscomment::  *{line[5:].rstrip()}* \n")
+                            tagHeaderFlag = True
+                            createTagHeader(
+                                fileo, fullfilename, extname, fullfilenametotal
+                            )
                     elif blockHeaderP3d5 == line[0:5]:
                         if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
@@ -582,7 +621,7 @@ def processFileMain(allFilesMain):
                         if line.strip()[0] not in ["'", '"', "#"]:
                             for tag in autoTagListEntry:
                                 if tag.lower() in line.lower():
-                                    tagtemp = "#c/" + tag.lower()
+                                    tagtemp = "#b/" + tag.lower()
                                     if tagtemp not in autoTagListTotal:
                                         autoTagListTotal.append(tagtemp)
 
@@ -619,45 +658,70 @@ def processFileMain(allFilesMain):
                 fileo.write(f"{tag} ")
             fileo.write(" \n")
             autoTagListTotal = []
+        if tagHeaderFlag == False:
+            tagHeaderFlag = True
+            createTagHeader(fileo, fullfilename, extname, fullfilenametotal)
+
         fileo.close()
 
 
-def createTagHeader(fileo):
-    fileo.write(f"___\n")
-    fileo.write(f"vsfolder::         {clipTempList2}\n")
-    fileo.write(f"fbasetags::         #f/base/{tempListT1[0]}\n")
-    fileo.write(f"fdirtags::          #f/dir/{tempListJoin}\n")
-    fileo.write(f"ftypetags::         #f/type/{runMod}\n")
+def createTagHeader(fileo, fullfilename, extname, fullfilenametotal):
+    if extname == ".ipynb":
+        typetag = "Jupyter"
+    else:
+        typetag = runMod
+    tempListT1Temp = tempListT1[0].replace(" ", "")
+    tempListJoinTemp = tempListJoin.replace(" ", "")
+    clipTempList2temp = clipTempList2.replace("/", "")
+    fileo.write(f"vsfolder::         *{clipTempList2}*\n")
+    fileo.write(
+        f"**OTypenotes:** [[a${typetag}]] **VSmdown:** [[{clipTempList2temp}.a$.mdown]]\n"
+    )
+    fileo.write(f"fbasetags::         #f/base/{tempListT1Temp}\n")
+    fileo.write(f"fdirtags::          #f/dir/{tempListJoinTemp}\n")
+    fileo.write(f"ftypetags::         #f/type/{typetag}\n")
     fileo.write(f"\n")
+    fileo.write(f"## 🔵[[$MyTags#🔵TODO Open]]\n")
+    fileo.write(f"```dataview\n")
+    fileo.write(f"TASK\n")
+    fileo.write(f"where file.name = this.file.name\n")
+    fileo.write(f"WHERE !completed\n")
+    fileo.write(f"```\n")
+    # fileo.write(f"```dataviewjs\n")
+    # fileo.write(
+    #     f'const file = app.workspace.getActiveFile(); const tags = app.metadataCache.getFileCache(file)?.tags?.map(a => \n'
+    # )
+    # fileo.write(
+    #     f'a.tag); if (tags) {{ const tagSet = new Set(tags); const tagArray = []; for (let tag of tagSet) {{ \n'
+    # )
+    # fileo.write(
+    #     f'tagArray.push([tag, tags?.filter((b) => (b === tag))?.length]); }} dv.table(["Tag", "# of occurences"], \n'
+    # )
+    # fileo.write(
+    #     f'tagArray); }} else {{ dv.span("No tags"); }} \n'
+    # )
+
+    # f'Where !contains(file.name,"@") and contains(file.tags,"c/") and contains(file.name, this.file.name)\n'
     fileo.write(f"```dataview\n")
     fileo.write(
         f'TABLE WITHOUT ID (tag + "(" + length(rows.file.link) + ")") AS VStags\n'
     )
     fileo.write(f'FROM -"Templates" and -"excalibrain" and -"_ZArchivedNotes"\n')
     fileo.write(
-        f'Where !contains(file.name,"@") and contains(file.tags,"c/") and contains(file.name, this.file.name)\n'
+        f'Where !contains(file.name,"@") and contains(file.name, this.file.name)\n'
     )
     fileo.write(f"FLATTEN file.etags AS tag GROUP BY tag SORT VStags DESC\n")
 
-    # fileo.write(
-    #     f'TABLE WITHOUT ID filter( file.etags, (x) => !contains(x, "#c/z") AND !contains(x,\n'
-    # )
-    # fileo.write(
-    #     f'"#/zdir") ) as VStags FROM -"Templates" and -"excalibrain" and -"_ZArchivedNotes"\n'
-    # )
-    # fileo.write(f"WHERE contains(file.name, this.file.name) SORT etags\n")
-
+    fullfilenametotallist = fullfilenametotal.split(".")
     fileo.write(f"```\n")
+    fileo.write(f"# 🔵 {fullfilenametotallist[-1]}\n")
     fileo.write(f"___\n")
 
 
 def mainline():
     global inputFileExtension
     global mainFileExtension
-    if runMod == "Jupyter":
-        inputFileExtension = ".py"
-        mainFileExtension = ".ipynb"
-    elif runMod == "Python":
+    if runMod == "Python":
         inputFileExtension = ".py"
         mainFileExtension = ".py"
     elif runMod == "SQL":
@@ -760,17 +824,27 @@ cntFileBlocked4 = 0
 
 # initialization program
 updateMode = True
-checkModificationDate = True
+checkModificationDate = False
 
 # topPath = "2data"
 # dirNameInputMain = "C:\\2data\\Python\\Projects"
 # dirNameInputRoot = "C:\\2data"
 # dirNameOutputMain = "H:\\Backup\\Obsidian\\CodeVault"
 
+# topPath1 = "2data"
+# dirNameInputMain1 = "C:\\2data"
+# dirNameInputRoot1 = "C:\\2data"
+
 topPath = "SharedA"
 dirNameInputMain = "Z:\SharedA\Python\Projects"
 dirNameInputRoot = "Z:\SharedA"
 dirNameOutputMain = "H:\\Backup\\Obsidian\\CodeVault"
+
+topPath1 = "SharedA"
+dirNameInputMain1 = "Z:\SharedA"
+dirNameInputRoot1 = "Z:\SharedA"
+
+# -----------------------------
 
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
@@ -803,7 +877,6 @@ includepathmain = [
     "CS50P",
     "AutoHotKey",
     "Data",
-    "Repos",
 ]
 
 excludefilemain = [
@@ -817,19 +890,23 @@ excludefilemain = [
     "obsidian0",
     "copy",
     "backup",
+    "Repos",
 ]
 
 excludepathmain = ["archive", "backup", "test"]
 
 autoTagListEntrymain = [
     "argv",
+    "csv",
     "dataframe",
     "derekbanas",
     "dictionary",
     "dictreader",
+    "lambda",
     "numpy",
     "sql",
     "sqlite",
+    "utf-8-sig",
     "xlwings",
 ]
 
@@ -854,7 +931,33 @@ dirmodeSearch = "Projects"
 dirmodePrint = "Projects"
 mainline()
 
-runMod = "Jupyter"
+runMod = "md"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "markdown"
+dirNameInput = dirNameInputRoot1
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = []
+includepath = [topPath1]
+excludefile = []
+excludepath = ["Images", "InfoSelect", "Obsidian",
+               "Typora",
+               "Zotero","Repos"]
+dirmodeSearch = topPath1
+dirmodePrint = topPath1
+mainline()
+
+runMod = "mdown"
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
 autoTagListEntry = autoTagListEntrymain[:]
@@ -881,7 +984,7 @@ mainline()
 runMod = "txt"
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
+autoTagListEntry = []
 includefile = includefilemain[:]
 includepath = includefilemain[:]
 excludefile = excludefilemain[:]
@@ -893,21 +996,9 @@ mainline()
 runMod = "ahk"
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
+autoTagListEntry = []
 includefile = includefilemain[:]
 includepath = ["Python\\Projects"]
-excludefile = excludefilemain[:]
-excludepath = excludefilemain[:]
-dirmodeSearch = "Projects"
-dirmodePrint = "Projects"
-mainline()
-
-runMod = "mdown"
-dirNameInput = dirNameInputMain
-dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
-includefile = includefilemain[:]
-includepath = includefilemain[:]
 excludefile = excludefilemain[:]
 excludepath = excludefilemain[:]
 dirmodeSearch = "Projects"
@@ -917,7 +1008,7 @@ mainline()
 runMod = "data"
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
+autoTagListEntry = []
 includefile = includefilemain[:]
 includepath = includefilemain[:]
 excludefile = excludefilemain[:]
@@ -929,7 +1020,7 @@ mainline()
 runMod = "csv"
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
+autoTagListEntry = []
 includefile = includefilemain[:]
 includepath = includefilemain[:]
 excludefile = excludefilemain[:]
@@ -941,7 +1032,7 @@ mainline()
 runMod = "html"
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
+autoTagListEntry = []
 includefile = includefilemain[:]
 includepath = includefilemain[:]
 excludefile = excludefilemain[:]
@@ -953,7 +1044,7 @@ mainline()
 runMod = "htm"
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
+autoTagListEntry = []
 includefile = includefilemain[:]
 includepath = includefilemain[:]
 excludefile = excludefilemain[:]
@@ -963,32 +1054,18 @@ dirmodePrint = "Projects"
 mainline()
 
 runMod = "xlsx"
-dirNameInput = dirNameInputMain
+dirNameInput = dirNameInputMain1
 dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
+autoTagListEntry = [topPath1]
 includefile = []
+includepath = [topPath1]
+excludefile = ["copy","backup"]
 excludepath = ["archive", "backup", "test","Images", "InfoSelect", 
                "Obsidian","Typora","Zotero","ARFB",
-               "Retirement",
-               "Python"]
-excludefile = ["copy","backup"]
-excludepath = ["z_python-for-excel"]
-dirmodeSearch = "Projects"
-dirmodePrint = "Projects"
-mainline()
-
-runMod = "markdown"
-dirNameInput = dirNameInputRoot
-dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
-includefile = []
-includepath = [topPath]
-excludefile = []
-excludepath = ["Images", "InfoSelect", "Obsidian","Python",
-               "Typora",
-               "Zotero"]
-dirmodeSearch = topPath
-dirmodePrint = topPath
+               "z_python-for-excel",
+               "Repos"]
+dirmodeSearch = topPath1
+dirmodePrint = topPath1
 mainline()
 
 # fmt: on
