@@ -89,6 +89,7 @@ def processFileMain(allFilesMain):
     BlockTypeP3d5 = "# ++ "  # level 1
     BlockTypeP2d5 = "# +++"  # level 2
     BlockTypePec4 = "# %%"  # level 3
+    BlockTypePec4a = "#%% "  # level 3
     BlockTypeN2d5 = "# -- "  # level 3
     BlockTypeN3d5 = "# ---"  # level 4
     BlockTypeEqu5 = "# == "  # remove
@@ -330,7 +331,7 @@ def processFileMain(allFilesMain):
                         "# ---",
                     ]:
                         line = line[3:].rstrip() + "\n"
-                if blockHeaderPec4 == line[0:4]:
+                if blockHeaderPec4 == line[0:4] or BlockTypePec4a == line[0:4]:
                     # if nothing on line read next
                     if bool(line[5:].strip()):
                         bsk = 0
@@ -418,30 +419,32 @@ def processFileMain(allFilesMain):
                 if dirnodes == dirmodePrint:
                     appendFlag = True
             clipTempList2 = "/".join(clipTempList1)
-            clipTempList3 = "".join(clipTempList1)
+            clipTempList3 = "-".join(clipTempList1)
 
             if extname == ".mdown":
                 fileOutput = (
                     dirNameOutputFinal
                     + "/"
-                    + clipTempList3
-                    + "."
                     + fullfilename
+                    + "~"
+                    + clipTempList3
                     + "."
                     + "mdown"
                     + ".md"
                 )
-                fullfilenametotal = clipTempList3 + "." + fullfilename
+                fullfilenametotal = fullfilename + "~" + clipTempList3
             else:
                 fileOutput = (
                     dirNameOutputFinal
                     + "/"
-                    + tempListT2[-1]
-                    + "."
                     + fullfilename
+                    + "~"
+                    + clipTempList3
+                    # + tempListT2[-1]
                     + ".md"
                 )
-                fullfilenametotal = tempListT2[-1] + "." + fullfilename
+                fullfilenametotal = fullfilename + "~" + clipTempList3
+                # fullfilenametotal = fullfilename + "-" + tempListT2[-1]
 
             fileo = open(fileOutput, "w")
             fileo = open(fileOutput, "a")
@@ -450,7 +453,12 @@ def processFileMain(allFilesMain):
             clipOutputForwardList = clipOutputForward.split("/")
 
             tempListT1 = clipTempList2.split("/")
-            tempListJoin = "".join(tempListT1)
+            if len(tempListT1) > 1:
+                tempListT1pop = tempListT1.pop()
+                tempListJoin = "".join(tempListT1) + "-" + tempListT1pop
+            else:
+                tempListJoin = "".join(tempListT1)
+
             clipOutputFileTemp = clipOutputFile.replace(" ", "%20")
             fullfilenameTemp = fullfilename.replace(" ", "%20")
             clipOutputBackwardTemp = clipOutputBackward.replace(":", "")
@@ -492,7 +500,7 @@ def processFileMain(allFilesMain):
             canvasString = canvasList[-1]
             fileo.write(
                 f"**vsext::** {extname} | **inputext::** {inputFileExtension} \
-| **CodeVaultCode:** [[CodeVaultCode]] | **MyTags:** [[$MyTags]]\n"
+| **CodeVaultCode:** [[CodeVaultCode]] | **MyFavorites:** [[$MyFavorites]]\n"
             )
             tempListT1Temp = tempListT1[0].replace(" ", "")
             tempListJoinTemp = tempListJoin.replace(" ", "")
@@ -546,7 +554,11 @@ def processFileMain(allFilesMain):
                         if lineCount == 0:
                             if line[5:6] in ["!", "?", "$"]:
                                 vspriority = line[5:6]
-                                fileo.write(f"vspriority:: {vspriority}\n")
+                                fileo.write(
+                                    f"- {vspriority} VS: {line[7:].rstrip()} \n"
+                                )
+                                fileo.write(f" \n")
+                                fileo.write(f"vspriority:: *{vspriority}* \n")
                                 fileo.write(f"vscomment::  *{line[7:].rstrip()}* \n")
                             else:
                                 vspriority = ""
@@ -577,7 +589,11 @@ def processFileMain(allFilesMain):
                             fileo.write(f"{P2block}\n")
                             P1BlockModeOn = False
                         fileo.write(line[5:].rstrip() + "\n")
-                    elif blockHeaderPec4 == line[0:4] or blockHeaderN2d5 == line[0:5]:
+                    elif (
+                        blockHeaderPec4 == line[0:4]
+                        or blockHeaderN2d5 == line[0:5]
+                        or BlockTypePec4a == line[0:4]
+                    ):
                         if bool(line[5:].strip()):
                             if len(autoTagListTotal) > 0:
                                 if P1BlockModeOn:
@@ -621,7 +637,7 @@ def processFileMain(allFilesMain):
                         if line.strip()[0] not in ["'", '"', "#"]:
                             for tag in autoTagListEntry:
                                 if tag.lower() in line.lower():
-                                    tagtemp = "#b/" + tag.lower()
+                                    tagtemp = "#z/" + tag.lower()
                                     if tagtemp not in autoTagListTotal:
                                         autoTagListTotal.append(tagtemp)
 
@@ -672,16 +688,16 @@ def createTagHeader(fileo, fullfilename, extname, fullfilenametotal):
         typetag = runMod
     tempListT1Temp = tempListT1[0].replace(" ", "")
     tempListJoinTemp = tempListJoin.replace(" ", "")
-    clipTempList2temp = clipTempList2.replace("/", "")
+    clipTempList2temp = clipTempList2.replace("/", "-")
     fileo.write(f"vsfolder::         *{clipTempList2}*\n")
     fileo.write(
-        f"**OTypenotes:** [[a${typetag}]] **VSmdown:** [[{clipTempList2temp}.a$.mdown]]\n"
+        f"**OTypenotes:** [[a${typetag}]] **VSmdown:** [[a$~{clipTempList2temp}.mdown]]\n"
     )
     fileo.write(f"fbasetags::         #f/base/{tempListT1Temp}\n")
     fileo.write(f"fdirtags::          #f/dir/{tempListJoinTemp}\n")
     fileo.write(f"ftypetags::         #f/type/{typetag}\n")
     fileo.write(f"\n")
-    fileo.write(f"## 🔵[[$MyTags#🔵TODO Open]]\n")
+    fileo.write(f"## 🔵[[$MyFavorites#🔵TODO Open]]\n")
     fileo.write(f"```dataview\n")
     fileo.write(f"TASK\n")
     fileo.write(f"where file.name = this.file.name\n")
@@ -865,6 +881,8 @@ file1.close()
 includefilemain = []
 
 includepathmain = [
+    "Youtube",
+    "Coursera",
     "CrashBook",
     "CrashCourse",
     "Jupyter",
@@ -897,6 +915,7 @@ excludepathmain = ["archive", "backup", "test"]
 
 autoTagListEntrymain = [
     "argv",
+    "chatgpt",
     "csv",
     "dataframe",
     "derekbanas",
@@ -931,17 +950,17 @@ dirmodeSearch = "Projects"
 dirmodePrint = "Projects"
 mainline()
 
-runMod = "md"
-dirNameInput = dirNameInputMain
-dirNameOutput = dirNameOutputMain
-autoTagListEntry = autoTagListEntrymain[:]
-includefile = includefilemain[:]
-includepath = includefilemain[:]
-excludefile = excludefilemain[:]
-excludepath = excludefilemain[:]
-dirmodeSearch = "Projects"
-dirmodePrint = "Projects"
-mainline()
+# runMod = "md"
+# dirNameInput = dirNameInputMain
+# dirNameOutput = dirNameOutputMain
+# autoTagListEntry = autoTagListEntrymain[:]
+# includefile = includefilemain[:]
+# includepath = includefilemain[:]
+# excludefile = excludefilemain[:]
+# excludepath = excludefilemain[:]
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# mainline()
 
 runMod = "markdown"
 dirNameInput = dirNameInputRoot1
@@ -981,77 +1000,77 @@ dirmodeSearch = "Projects"
 dirmodePrint = "Projects"
 mainline()
 
-runMod = "txt"
-dirNameInput = dirNameInputMain
-dirNameOutput = dirNameOutputMain
-autoTagListEntry = []
-includefile = includefilemain[:]
-includepath = includefilemain[:]
-excludefile = excludefilemain[:]
-excludepath = excludefilemain[:]
-dirmodeSearch = "Projects"
-dirmodePrint = "Projects"
-mainline()
+# runMod = "txt"
+# dirNameInput = dirNameInputMain
+# dirNameOutput = dirNameOutputMain
+# autoTagListEntry = []
+# includefile = includefilemain[:]
+# includepath = includefilemain[:]
+# excludefile = excludefilemain[:]
+# excludepath = excludefilemain[:]
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# mainline()
 
-runMod = "ahk"
-dirNameInput = dirNameInputMain
-dirNameOutput = dirNameOutputMain
-autoTagListEntry = []
-includefile = includefilemain[:]
-includepath = ["Python\\Projects"]
-excludefile = excludefilemain[:]
-excludepath = excludefilemain[:]
-dirmodeSearch = "Projects"
-dirmodePrint = "Projects"
-mainline()
+# runMod = "ahk"
+# dirNameInput = dirNameInputMain
+# dirNameOutput = dirNameOutputMain
+# autoTagListEntry = []
+# includefile = includefilemain[:]
+# includepath = ["Python\\Projects"]
+# excludefile = excludefilemain[:]
+# excludepath = excludefilemain[:]
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# mainline()
 
-runMod = "data"
-dirNameInput = dirNameInputMain
-dirNameOutput = dirNameOutputMain
-autoTagListEntry = []
-includefile = includefilemain[:]
-includepath = includefilemain[:]
-excludefile = excludefilemain[:]
-excludepath = excludefilemain[:]
-dirmodeSearch = "Projects"
-dirmodePrint = "Projects"
-mainline()
+# runMod = "data"
+# dirNameInput = dirNameInputMain
+# dirNameOutput = dirNameOutputMain
+# autoTagListEntry = []
+# includefile = includefilemain[:]
+# includepath = includefilemain[:]
+# excludefile = excludefilemain[:]
+# excludepath = excludefilemain[:]
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# mainline()
 
-runMod = "csv"
-dirNameInput = dirNameInputMain
-dirNameOutput = dirNameOutputMain
-autoTagListEntry = []
-includefile = includefilemain[:]
-includepath = includefilemain[:]
-excludefile = excludefilemain[:]
-excludepath = excludefilemain[:]
-dirmodeSearch = "Projects"
-dirmodePrint = "Projects"
-mainline()
+# runMod = "csv"
+# dirNameInput = dirNameInputMain
+# dirNameOutput = dirNameOutputMain
+# autoTagListEntry = []
+# includefile = includefilemain[:]
+# includepath = includefilemain[:]
+# excludefile = excludefilemain[:]
+# excludepath = excludefilemain[:]
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# mainline()
 
-runMod = "html"
-dirNameInput = dirNameInputMain
-dirNameOutput = dirNameOutputMain
-autoTagListEntry = []
-includefile = includefilemain[:]
-includepath = includefilemain[:]
-excludefile = excludefilemain[:]
-excludepath = excludefilemain[:]
-dirmodeSearch = "Projects"
-dirmodePrint = "Projects"
-mainline()
+# runMod = "html"
+# dirNameInput = dirNameInputMain
+# dirNameOutput = dirNameOutputMain
+# autoTagListEntry = []
+# includefile = includefilemain[:]
+# includepath = includefilemain[:]
+# excludefile = excludefilemain[:]
+# excludepath = excludefilemain[:]
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# mainline()
 
-runMod = "htm"
-dirNameInput = dirNameInputMain
-dirNameOutput = dirNameOutputMain
-autoTagListEntry = []
-includefile = includefilemain[:]
-includepath = includefilemain[:]
-excludefile = excludefilemain[:]
-excludepath = excludefilemain[:]
-dirmodeSearch = "Projects"
-dirmodePrint = "Projects"
-mainline()
+# runMod = "htm"
+# dirNameInput = dirNameInputMain
+# dirNameOutput = dirNameOutputMain
+# autoTagListEntry = []
+# includefile = includefilemain[:]
+# includepath = includefilemain[:]
+# excludefile = excludefilemain[:]
+# excludepath = excludefilemain[:]
+# dirmodeSearch = "Projects"
+# dirmodePrint = "Projects"
+# mainline()
 
 runMod = "xlsx"
 dirNameInput = dirNameInputMain1
