@@ -1,5 +1,6 @@
 # %%
 import os
+import shutil
 import time
 from datetime import datetime
 
@@ -426,24 +427,30 @@ def processFileMain(allFilesMain):
                     dirNameOutputFinal
                     + "/"
                     + fullfilename
-                    + "~"
+                    + extname
+                    + "__"
                     + clipTempList3
-                    + "."
-                    + "mdown"
+                    + "__vsc"
+                    # + "."
+                    # + "mdown"
                     + ".md"
                 )
-                fullfilenametotal = fullfilename + "~" + clipTempList3
+                fullfilenametotal = fullfilename + "__" + clipTempList3
+                fullfilenametotal_ext = fullfilename + extname + "__" + clipTempList3
             else:
                 fileOutput = (
                     dirNameOutputFinal
                     + "/"
                     + fullfilename
-                    + "~"
+                    + extname
+                    + "__"
                     + clipTempList3
+                    + "__vsc"
                     # + tempListT2[-1]
                     + ".md"
                 )
-                fullfilenametotal = fullfilename + "~" + clipTempList3
+                fullfilenametotal = fullfilename + "__" + clipTempList3
+                fullfilenametotal_ext = fullfilename + extname + "__" + clipTempList3
                 # fullfilenametotal = fullfilename + "-" + tempListT2[-1]
 
             fileo = open(fileOutput, "w")
@@ -505,8 +512,8 @@ def processFileMain(allFilesMain):
             tempListT1Temp = tempListT1[0].replace(" ", "")
             tempListJoinTemp = tempListJoin.replace(" ", "")
             fileo.write(
-                f"**Odir:** [[{tempListJoinTemp}.dir]] \
-| **Opage:** [[{fullfilenametotal}.page]] | **Ocanvas:** [[{canvasString}.canvas]]\n"
+                f"**Odir:** [[{tempListJoinTemp}__dir]] \
+| **Opage:** [[{fullfilenametotal_ext}__page]] | **Ocanvas:** [[{tempListJoinTemp}.canvas]]\n"
             )
             autoTagListTotal = []
             if extname in [".xlsx"]:
@@ -691,13 +698,13 @@ def createTagHeader(fileo, fullfilename, extname, fullfilenametotal):
     clipTempList2temp = clipTempList2.replace("/", "-")
     fileo.write(f"vsfolder::         *{clipTempList2}*\n")
     fileo.write(
-        f"**OTypenotes:** [[a${typetag}]] **VSmdown:** [[a$~{clipTempList2temp}.mdown]]\n"
+        f"**OTypenotes:** [[a${typetag}]] **VSmdown:** [[a$.mdown__{clipTempList2temp}__vsc]]\n"
     )
     fileo.write(f"fbasetags::         #f/base/{tempListT1Temp}\n")
     fileo.write(f"fdirtags::          #f/dir/{tempListJoinTemp}\n")
     fileo.write(f"ftypetags::         #f/type/{typetag}\n")
     fileo.write(f"\n")
-    fileo.write(f"## 🔵[[$MyFavorites#🔵TODO Open]]\n")
+    fileo.write(f"# 🔵[[$MyFavorites#🔵TODO Open]]\n")
     fileo.write(f"```dataview\n")
     fileo.write(f"TASK\n")
     fileo.write(f"where file.name = this.file.name\n")
@@ -841,7 +848,12 @@ cntFileBlocked4 = 0
 # initialization program
 updateMode = True
 checkModificationDate = False
-
+# ----------------------------------------------------------
+# if checkModificationDate == False:
+#     dir_path = "H:\\Backup\\Obsidian\\CodeVault\\2data"
+#     shutil.rmtree(dir_path)
+#     dir_path = "H:\\Backup\\Obsidian\\CodeVault\\Projects"
+#     shutil.rmtree(dir_path)
 # topPath = "2data"
 # dirNameInputMain = "C:\\2data\\Python\\Projects"
 # dirNameInputRoot = "C:\\2data"
@@ -851,6 +863,13 @@ checkModificationDate = False
 # dirNameInputMain1 = "C:\\2data"
 # dirNameInputRoot1 = "C:\\2data"
 
+# ----------------------------------------------------------
+
+if checkModificationDate == False:
+    dir_path = "H:\\Backup\\Obsidian\\CodeVault\\SharedA"
+    shutil.rmtree(dir_path)
+    dir_path = "H:\\Backup\\Obsidian\\CodeVault\\Projects"
+    shutil.rmtree(dir_path)
 topPath = "SharedA"
 dirNameInputMain = "Z:\SharedA\Python\Projects"
 dirNameInputRoot = "Z:\SharedA"
@@ -859,8 +878,7 @@ dirNameOutputMain = "H:\\Backup\\Obsidian\\CodeVault"
 topPath1 = "SharedA"
 dirNameInputMain1 = "Z:\SharedA"
 dirNameInputRoot1 = "Z:\SharedA"
-
-# -----------------------------
+# ----------------------------------------------------------♫
 
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
@@ -925,6 +943,7 @@ autoTagListEntrymain = [
     "numpy",
     "sql",
     "sqlite",
+    "streamlit",
     "utf-8-sig",
     "xlwings",
 ]
@@ -950,17 +969,17 @@ dirmodeSearch = "Projects"
 dirmodePrint = "Projects"
 mainline()
 
-# runMod = "md"
-# dirNameInput = dirNameInputMain
-# dirNameOutput = dirNameOutputMain
-# autoTagListEntry = autoTagListEntrymain[:]
-# includefile = includefilemain[:]
-# includepath = includefilemain[:]
-# excludefile = excludefilemain[:]
-# excludepath = excludefilemain[:]
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# mainline()
+runMod = "md"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = autoTagListEntrymain[:]
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
 
 runMod = "markdown"
 dirNameInput = dirNameInputRoot1
@@ -1000,41 +1019,41 @@ dirmodeSearch = "Projects"
 dirmodePrint = "Projects"
 mainline()
 
-# runMod = "txt"
-# dirNameInput = dirNameInputMain
-# dirNameOutput = dirNameOutputMain
-# autoTagListEntry = []
-# includefile = includefilemain[:]
-# includepath = includefilemain[:]
-# excludefile = excludefilemain[:]
-# excludepath = excludefilemain[:]
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# mainline()
+runMod = "txt"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = []
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
 
-# runMod = "ahk"
-# dirNameInput = dirNameInputMain
-# dirNameOutput = dirNameOutputMain
-# autoTagListEntry = []
-# includefile = includefilemain[:]
-# includepath = ["Python\\Projects"]
-# excludefile = excludefilemain[:]
-# excludepath = excludefilemain[:]
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# mainline()
+runMod = "ahk"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = []
+includefile = includefilemain[:]
+includepath = ["Python\\Projects"]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
 
-# runMod = "data"
-# dirNameInput = dirNameInputMain
-# dirNameOutput = dirNameOutputMain
-# autoTagListEntry = []
-# includefile = includefilemain[:]
-# includepath = includefilemain[:]
-# excludefile = excludefilemain[:]
-# excludepath = excludefilemain[:]
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# mainline()
+runMod = "data"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = []
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
 
 # runMod = "csv"
 # dirNameInput = dirNameInputMain
@@ -1048,29 +1067,29 @@ mainline()
 # dirmodePrint = "Projects"
 # mainline()
 
-# runMod = "html"
-# dirNameInput = dirNameInputMain
-# dirNameOutput = dirNameOutputMain
-# autoTagListEntry = []
-# includefile = includefilemain[:]
-# includepath = includefilemain[:]
-# excludefile = excludefilemain[:]
-# excludepath = excludefilemain[:]
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# mainline()
+runMod = "html"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = []
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
 
-# runMod = "htm"
-# dirNameInput = dirNameInputMain
-# dirNameOutput = dirNameOutputMain
-# autoTagListEntry = []
-# includefile = includefilemain[:]
-# includepath = includefilemain[:]
-# excludefile = excludefilemain[:]
-# excludepath = excludefilemain[:]
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# mainline()
+runMod = "htm"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = []
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
 
 runMod = "xlsx"
 dirNameInput = dirNameInputMain1
