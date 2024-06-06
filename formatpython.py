@@ -138,6 +138,17 @@ def processFileMain(allFilesMain):
         blockHeaderPec4 = BlockTypePec4
         blockHeaderN2d5 = BlockTypeN2d5
         blockHeaderN3d5 = BlockTypeN3d5
+    elif runMod == "bat":
+        extname = ".bat"
+        P1block = "```c"
+        P2block = "```"
+        blockHeaderTid5 = BlockTypeTid5
+        blockHeaderP3d5 = BlockTypeP3d5
+        blockHeaderP2d5 = BlockTypeP2d5
+        blockHeaderEqu5 = BlockTypeEqu5
+        blockHeaderPec4 = BlockTypePec4
+        blockHeaderN2d5 = BlockTypeN2d5
+        blockHeaderN3d5 = BlockTypeN3d5
     elif runMod == "mdown":
         extname = ".mdown"
         P1block = ""
@@ -737,7 +748,7 @@ def createTagHeader(fileo, fullfilename, extname, fullfilenametotal):
 
     fullfilenametotallist = fullfilenametotal.split(".")
     fileo.write(f"```\n")
-    fileo.write(f"# 🔵 {fullfilenametotallist[-1]}\n")
+    fileo.write(f"# 🔵 VSCode: {fullfilenametotallist[-1]}__vsc\n")
     fileo.write(f"___\n")
 
 
@@ -756,6 +767,9 @@ def mainline():
     elif runMod == "ahk":
         inputFileExtension = ".ahk"
         mainFileExtension = ".ahk"
+    elif runMod == "bat":
+        inputFileExtension = ".bat"
+        mainFileExtension = ".bat"
     elif runMod == "mdown":
         inputFileExtension = ".mdown"
         mainFileExtension = ".mdown"
@@ -847,37 +861,37 @@ cntFileBlocked4 = 0
 
 # initialization program
 updateMode = True
-checkModificationDate = False
+checkModificationDate = True
 # ----------------------------------------------------------
 # if checkModificationDate == False:
-#     dir_path = "H:\\Backup\\Obsidian\\CodeVault\\2data"
+#     dir_path = "C:\\2data\\Obsidian\\CodeVault\\2data"
 #     shutil.rmtree(dir_path)
-#     dir_path = "H:\\Backup\\Obsidian\\CodeVault\\Projects"
+#     dir_path = "C:\\2data\\Obsidian\\CodeVault\\Projects"
 #     shutil.rmtree(dir_path)
 # topPath = "2data"
 # dirNameInputMain = "C:\\2data\\Python\\Projects"
 # dirNameInputRoot = "C:\\2data"
-# dirNameOutputMain = "H:\\Backup\\Obsidian\\CodeVault"
+# dirNameOutputMain = "C:\\2data\\Obsidian\\CodeVault"
 
 # topPath1 = "2data"
 # dirNameInputMain1 = "C:\\2data"
 # dirNameInputRoot1 = "C:\\2data"
 
 # ----------------------------------------------------------
-
 if checkModificationDate == False:
-    dir_path = "H:\\Backup\\Obsidian\\CodeVault\\SharedA"
+    dir_path = "Z:\\SharedA\\Obsidian\\CodeVault\\SharedA"
     shutil.rmtree(dir_path)
-    dir_path = "H:\\Backup\\Obsidian\\CodeVault\\Projects"
+    dir_path = "Z:\\SharedA\\Obsidian\\CodeVault\\Projects"
     shutil.rmtree(dir_path)
 topPath = "SharedA"
-dirNameInputMain = "Z:\SharedA\Python\Projects"
-dirNameInputRoot = "Z:\SharedA"
-dirNameOutputMain = "H:\\Backup\\Obsidian\\CodeVault"
+dirNameInputMain = "Z:\\SharedA\\Python\\Projects"
+dirNameInputRoot = "Z:\\SharedA"
+dirNameOutputMain = "Z:\\SharedA\\Obsidian\\CodeVault"
 
 topPath1 = "SharedA"
 dirNameInputMain1 = "Z:\SharedA"
 dirNameInputRoot1 = "Z:\SharedA"
+
 # ----------------------------------------------------------♫
 
 dirNameInput = dirNameInputMain
@@ -1032,6 +1046,18 @@ dirmodePrint = "Projects"
 mainline()
 
 runMod = "ahk"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = []
+includefile = includefilemain[:]
+includepath = ["Python\\Projects"]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
+
+runMod = "bat"
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
 autoTagListEntry = []
