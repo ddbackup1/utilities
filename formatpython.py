@@ -2,6 +2,7 @@
 import os
 import shutil
 import time
+import re
 from datetime import datetime
 
 
@@ -85,6 +86,12 @@ def processFileMain(allFilesMain):
     # if sql comment strip comment so processed like python
     # -- # modified to #
     #
+    BlockLevel1L4 = "# # "  # level 1
+    BlockLevel2L5 = "# ## "  # level 2
+    BlockLevel3L6 = "# ### "  # level 3
+    BlockLevel4L7 = "# #### "  # level 4
+    BlockLevel5L8 = "# ##### "  # level 5
+    BlockLevel6L9 = "# ###### "  # level 6
     BlockTypeTid5 = "# ~~ "  # headers
 
     BlockTypeP3d5 = "# ++ "  # level 1
@@ -401,6 +408,7 @@ def processFileMain(allFilesMain):
             else:
                 clipOutputBackward = "\\".join(clipInputList) + "\\" + basefilename
 
+            clipOutputBackwardNoFile = "\\".join(clipInputList)
             clipOutputForward = "/".join(clipInputList)
             clipOutputDouble = "\\\\".join(clipInputList)
             clipOutputFile = clipOutputForward.rstrip().split(":")
@@ -431,38 +439,64 @@ def processFileMain(allFilesMain):
                 if dirnodes == dirmodePrint:
                     appendFlag = True
             clipTempList2 = "/".join(clipTempList1)
-            clipTempList3 = "-".join(clipTempList1)
+            clipTempList3 = "_".join(clipTempList1)
 
             if extname == ".mdown":
                 fileOutput = (
                     dirNameOutputFinal
                     + "/"
-                    + fullfilename
-                    + extname
-                    + "__"
                     + clipTempList3
                     + "__vsc"
+                    + "__"
+                    + fullfilename
+                    + extname
                     # + "."
                     # + "mdown"
                     + ".md"
                 )
-                fullfilenametotal = fullfilename + "__" + clipTempList3
-                fullfilenametotal_ext = fullfilename + extname + "__" + clipTempList3
+                # fullfilenametotal = fullfilename + "__" + clipTempList3
+                # fullfilenametotal_ext = fullfilename + extname + "__" + clipTempList3
+                fullfilenametotal = clipTempList3 + "__" + fullfilename
+                fullfilenametotal_ext = clipTempList3 + "__" + fullfilename + extname
+                fullfilenametotal_page = (
+                    clipTempList3 + "__page" + "__" + fullfilename + extname
+                )
             else:
                 fileOutput = (
                     dirNameOutputFinal
                     + "/"
-                    + fullfilename
-                    + extname
-                    + "__"
                     + clipTempList3
                     + "__vsc"
+                    + "__"
+                    + fullfilename
+                    + extname
                     # + tempListT2[-1]
                     + ".md"
                 )
-                fullfilenametotal = fullfilename + "__" + clipTempList3
-                fullfilenametotal_ext = fullfilename + extname + "__" + clipTempList3
-                # fullfilenametotal = fullfilename + "-" + tempListT2[-1]
+                # fullfilenametotal = fullfilename + "__" + clipTempList3
+                # fullfilenametotal_ext = fullfilename + extname + "__" + clipTempList3
+                fullfilenametotal = clipTempList3 + "__" + fullfilename
+                fullfilenametotal_ext = clipTempList3 + "__" + fullfilename + extname
+                fullfilenametotal_page = (
+                    clipTempList3 + "__page" + "__" + fullfilename + extname
+                )
+                # fullfilenametotal = fullfilename + "_" + tempListT2[-1]
+            # print("debug1")
+            # print("dirnameOutputFinal = ", dirNameOutputFinal)
+            # print("fullfilename = ", fullfilename)
+            # print("extname = ", extname)
+            # print("clipTempList3 = ", clipTempList3)
+            # print("fileOutput = ", fileOutput)
+            # print("")
+            # print("fullfilename = ", fullfilename)
+            # print("clipTempList3 = ", clipTempList3)
+            # print("fullfilenametotal = ", fullfilenametotal)
+            # print("")
+            # print("clipTempList3 = ", clipTempList3)
+            # print("extname = ", extname)
+            # print("fullfilename = ", fullfilename)
+            # print("fullfilenametotal_ext = ", fullfilenametotal_ext)
+            # print("fullfilenametotal_page = ", fullfilenametotal_page)
 
             fileo = open(fileOutput, "w")
             fileo = open(fileOutput, "a")
@@ -471,16 +505,19 @@ def processFileMain(allFilesMain):
             clipOutputForwardList = clipOutputForward.split("/")
 
             tempListT1 = clipTempList2.split("/")
+            # I don't think this does anything now 2024-06-18
+            # the last element was removed and added to the end
             if len(tempListT1) > 1:
                 tempListT1pop = tempListT1.pop()
-                tempListJoin = "".join(tempListT1) + "-" + tempListT1pop
+                tempListJoin = "_".join(tempListT1) + "_" + tempListT1pop
+                tempListT1.append(tempListT1pop)  # added 2024-06-18
             else:
-                tempListJoin = "".join(tempListT1)
+                tempListJoin = "_".join(tempListT1)
 
             clipOutputFileTemp = clipOutputFile.replace(" ", "%20")
             fullfilenameTemp = fullfilename.replace(" ", "%20")
-            clipOutputBackwardTemp = clipOutputBackward.replace(":", "")
-            clipOutputBackwardTemp = clipOutputBackwardTemp.replace("\\", "/")
+            clipOutputBackwardTemp = clipOutputBackwardNoFile.replace(":", ":")
+            clipOutputBackwardTemp = clipOutputBackwardTemp.replace("\\", "\\")
 
             fileo.write(f"---\n")
             fileo.write(f"filename: {fullfilename}\n")
@@ -490,11 +527,21 @@ def processFileMain(allFilesMain):
             fileo.write(
                 f"dateMod:         {mod_date[:8]}.{mod_date[8:12]}.{mod_date[12:-1]}\n"
             )
-            fileo.write(f"obsidianUIMode: preview\n")
+            # fileo.write(f"obsidianUIMode: preview\n")
             if processMod != "Jupyter":
                 fileo.write(f"dirpath:          {clipOutputFileTemp}\n")
                 fileo.write(
-                    f"dirfilename:    {clipOutputFileTemp}/{fullfilenameTemp}{extname}\n"
+                    f"dirfilenamez:    {clipOutputFileTemp}/{fullfilenameTemp}{extname}\n"
+                )
+                # added 2024-06-18
+                clipOutputFileTemp1 = clipOutputFileTemp.replace(
+                    "file:///z", "file:///c"
+                )
+                clipOutputFileTemp1 = clipOutputFileTemp1.replace(
+                    "/SharedA/", "/2data/"
+                )
+                fileo.write(
+                    f"dirfilenamec:    {clipOutputFileTemp1}/{fullfilenameTemp}{extname}\n"
                 )
             if processMod == "Jupyter":
                 clipInputList = programName.rstrip().split("\\")
@@ -505,15 +552,25 @@ def processFileMain(allFilesMain):
                 clipOutputFile = (
                     "file:///" + driveLetter.lower() + "%3A" + clipOutputFile[1]
                 )
-                fileo.write(f"vsjupyterpy:     {clipOutputFile}\n")
                 fileo.write(f"dirpath:          {clipOutputFileTemp}\n")
+                fileo.write(f"dirfilenamepy:     {clipOutputFile}\n")
                 clipOutputFileTemp = clipOutputFile.rstrip().split(".")
                 clipOutputFileTemp[1] = ".ipynb"
                 clipOutputFileTemp = "".join(clipOutputFileTemp)
-                fileo.write(f"dirfilename:  {clipOutputFileTemp}\n")
+                fileo.write(f"dirfilenamez:  {clipOutputFileTemp}\n")
+                # added 2024-06-18
+                clipOutputFileTemp1 = clipOutputFileTemp.replace(
+                    "file:///z", "file:///c"
+                )
+                clipOutputFileTemp1 = clipOutputFileTemp1.replace(
+                    "/SharedA/", "/2data/"
+                )
+                fileo.write(f"dirfilenamec:    {clipOutputFileTemp1}\n")
             # insert frontmatter marking
+            fullfilenametotallist = fullfilenametotal.split("__")
+            fullfilenametotallist1 = fullfilenametotallist[1] + extname
             fileo.write(f"---\n")
-            fileo.write(f"# 🔵Ptags:\n")
+            fileo.write(f"# 🔵Ptags: {fullfilenametotallist1}  **vsc**\n")
             canvasList = clipTempList2.split("/")
             canvasString = canvasList[-1]
             fileo.write(
@@ -524,7 +581,7 @@ def processFileMain(allFilesMain):
             tempListJoinTemp = tempListJoin.replace(" ", "")
             fileo.write(
                 f"**Odir:** [[{tempListJoinTemp}__dir]] \
-| **Opage:** [[{fullfilenametotal_ext}__page]] | **Ocanvas:** [[{tempListJoinTemp}.canvas]]\n"
+| **Opage:** [[{fullfilenametotal_page}]] | **Ocanvas:** [[{tempListJoinTemp}__canvas.canvas]]\n"
             )
             autoTagListTotal = []
             if extname in [".xlsx"]:
@@ -591,7 +648,17 @@ def processFileMain(allFilesMain):
                             fileo.write(f"{P2block}\n")
                             P1BlockModeOn = False
                         fileo.write("# 🟩" + line[5:].rstrip() + "\n")
+                    elif BlockLevel1L4 == line[0:4]:
+                        if P1BlockModeOn:
+                            fileo.write(f"{P2block}\n")
+                            P1BlockModeOn = False
+                        fileo.write("# 🟩" + line[4:].rstrip() + "\n")
                     elif blockHeaderP2d5 == line[0:5]:
+                        if P1BlockModeOn:
+                            fileo.write(f"{P2block}\n")
+                            P1BlockModeOn = False
+                        fileo.write("## 🟪" + line[5:].rstrip() + "\n")
+                    elif BlockLevel2L5 == line[0:5]:
                         if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
                             P1BlockModeOn = False
@@ -602,15 +669,36 @@ def processFileMain(allFilesMain):
                             P1BlockModeOn = False
                         cPos = line.index(blockHeaderN3d5)
                         fileo.write("#### ✔" + line[cPos + 5 :].rstrip() + "\n")
+                    elif BlockLevel4L7 in line:
+                        if P1BlockModeOn:
+                            fileo.write(f"{P2block}\n")
+                            P1BlockModeOn = False
+                        cPos = line.index(BlockLevel4L7)
+                        fileo.write("#### ✔" + line[cPos + 6 :].rstrip() + "\n")
+                    elif BlockLevel5L8 in line:
+                        if P1BlockModeOn:
+                            fileo.write(f"{P2block}\n")
+                            P1BlockModeOn = False
+                        cPos = line.index(BlockLevel5L8)
+                        fileo.write("##### ✔" + line[cPos + 7 :].rstrip() + "\n")
+                    elif BlockLevel6L9 in line:
+                        if P1BlockModeOn:
+                            fileo.write(f"{P2block}\n")
+                            P1BlockModeOn = False
+                        cPos = line.index(BlockLevel6L9)
+                        fileo.write("###### ✔" + line[cPos + 8 :].rstrip() + "\n")
                     elif blockHeaderEqu5 == line[0:5]:
                         if P1BlockModeOn:
                             fileo.write(f"{P2block}\n")
                             P1BlockModeOn = False
                         fileo.write(line[5:].rstrip() + "\n")
+                    elif "# %% [markdown]" in line:
+                        brk = 0
                     elif (
                         blockHeaderPec4 == line[0:4]
                         or blockHeaderN2d5 == line[0:5]
                         or BlockTypePec4a == line[0:4]
+                        or BlockLevel3L6 == line[0:6]
                     ):
                         if bool(line[5:].strip()):
                             if len(autoTagListTotal) > 0:
@@ -628,12 +716,15 @@ def processFileMain(allFilesMain):
                                         f"missing headerWritten for index: file=\
                                         {basefilename} index={blockCount} \nline={line}"
                                     )
-                            blockCount += 1
                             if P1BlockModeOn:
                                 fileo.write(f"{P2block}\n")
                                 P1BlockModeOn = False
-                            fileo.write("### 🟡" + line[5:])
-                            fileo.write(f"[{blockCount}]\n")
+                            if BlockLevel3L6 == line[0:6]:
+                                fileo.write("### 🟡" + line[6:])
+                            else:
+                                fileo.write("### 🟡" + line[5:])
+                                blockCount += 1
+                                fileo.write(f"[{blockCount}]\n")
                             headerWritten = True
                     else:
                         # print error message for these
@@ -652,13 +743,49 @@ def processFileMain(allFilesMain):
                         fileo.write(line.rstrip() + "\n")
 
                         # exclude comment lines from auto tagging
-                        if line.strip()[0] not in ["'", '"', "#"]:
+                        if line.strip()[0] not in ["'", '"', "~"]:
                             for tag in autoTagListEntry:
-                                if tag.lower() in line.lower():
-                                    tagtemp = "#z/" + tag.lower()
-                                    if tagtemp not in autoTagListTotal:
-                                        autoTagListTotal.append(tagtemp)
-
+                                # update 2024-06-04 to partial match
+                                #
+                                # if tag.lower() in line.lower():
+                                #     tagtemp = "#z/" + tag.lower()
+                                #     if tagtemp not in autoTagListTotal:
+                                #         autoTagListTotal.append(tagtemp)
+                                # added
+                                # line = line.replace(".", " ")
+                                # words = line.lower().split()
+                                pattern = r"[^a-zA-Z/]"
+                                result = re.sub(pattern, " ", line)
+                                words = result.lower().split()
+                                tagtemp = ""
+                                for word in words:
+                                    if word.count("/") > 4:
+                                        tagtemp = ""
+                                    elif word.lower()[0:1] in ["/"]:
+                                        tagtemp == ""
+                                    elif word.lower()[1:2] in ["/"]:
+                                        tagtemp == ""
+                                    else:
+                                        if tag.lower() in word.lower():
+                                            word_length = len(tag.lower())
+                                            word_start = word.lower()[:word_length]
+                                            if tag.lower() == word_start:
+                                                tagtemp = "#z/" + word.lower()
+                                            elif word.lower()[0] == "/":
+                                                tagtemp = (
+                                                    "#z/" + tag.lower() + word.lower()
+                                                )
+                                            else:
+                                                tagtemp = (
+                                                    "#z/"
+                                                    + tag.lower()
+                                                    + "/"
+                                                    + word.lower()
+                                                )
+                                    if bool(tagtemp):
+                                        if tagtemp not in autoTagListTotal:
+                                            autoTagListTotal.append(tagtemp)
+                                # added
                     if "#c/" in line:
                         if line[0:5] == "# #c/" or line[0:3] == "#c/":
                             bsk = 0
@@ -670,6 +797,16 @@ def processFileMain(allFilesMain):
                 else:
                     fileo.write(line.rstrip() + "\n")
                 line = filei.readline()
+                if lineCount > 20 and runMod.lower() in [
+                    "csv",
+                    "data",
+                    "xlsx",
+                    "html",
+                    "htm",
+                    "zzz",
+                ]:
+                    fileo.write("truncating after 20 lines....\n")
+                    break
                 # if sql comment strip comment so processed like python mainline
                 if line[0:4] == "-- #":
                     if line[3:8] in [
@@ -705,17 +842,27 @@ def createTagHeader(fileo, fullfilename, extname, fullfilenametotal):
     else:
         typetag = runMod
     tempListT1Temp = tempListT1[0].replace(" ", "")
+    if len(tempListT1) > 1:
+        tempListT2Temp = (
+            tempListT1[0].replace(" ", "") + "_" + tempListT1[1].replace(" ", "")
+        )
+    else:
+        tempListT2Temp = tempListT1[0].replace(" ", "")
     tempListJoinTemp = tempListJoin.replace(" ", "")
-    clipTempList2temp = clipTempList2.replace("/", "-")
+    clipTempList2temp = clipTempList2.replace("/", "_")
     fileo.write(f"vsfolder::         *{clipTempList2}*\n")
     fileo.write(
-        f"**OTypenotes:** [[a${typetag}]] **VSmdown:** [[a$.mdown__{clipTempList2temp}__vsc]]\n"
+        f"**OTypenotes:** [[a${typetag}]] **VSmdown:** [[{clipTempList2temp}__vsc__a$.mdown]]\n"
     )
     fileo.write(f"fbasetags::         #f/base/{tempListT1Temp}\n")
+    fileo.write(f"fdir2tags::         #f/dir/{tempListT2Temp}\n")
     fileo.write(f"fdirtags::          #f/dir/{tempListJoinTemp}\n")
     fileo.write(f"ftypetags::         #f/type/{typetag}\n")
-    fileo.write(f"\n")
-    fileo.write(f"# 🔵[[$MyFavorites#🔵TODO Open]]\n")
+    fileo.write(
+        f"**Created::**  `$= dv.current().file.ctime`   **Updated::**  `$= dv.current().file.mtime`\n"
+    )
+    # fileo.write(f"\n")
+    fileo.write(f"# 🔵[[$MyFavorites#🔵TODO Open]]   **vsc**\n")
     fileo.write(f"```dataview\n")
     fileo.write(f"TASK\n")
     fileo.write(f"where file.name = this.file.name\n")
@@ -746,9 +893,10 @@ def createTagHeader(fileo, fullfilename, extname, fullfilenametotal):
     )
     fileo.write(f"FLATTEN file.etags AS tag GROUP BY tag SORT VStags DESC\n")
 
-    fullfilenametotallist = fullfilenametotal.split(".")
+    fullfilenametotallist = fullfilenametotal.split("__")
+    fullfilenametotallist1 = fullfilenametotallist[1] + extname
     fileo.write(f"```\n")
-    fileo.write(f"# 🔵 VSCode: {fullfilenametotallist[-1]}__vsc\n")
+    fileo.write(f"# 🔵 VSCode: {fullfilenametotallist1}   **vsc**\n")
     fileo.write(f"___\n")
 
 
@@ -956,7 +1104,6 @@ autoTagListEntrymain = [
     "lambda",
     "numpy",
     "sql",
-    "sqlite",
     "streamlit",
     "utf-8-sig",
     "xlwings",
@@ -1069,7 +1216,7 @@ dirmodeSearch = "Projects"
 dirmodePrint = "Projects"
 mainline()
 
-runMod = "data"
+runMod = "csv"
 dirNameInput = dirNameInputMain
 dirNameOutput = dirNameOutputMain
 autoTagListEntry = []
@@ -1081,17 +1228,17 @@ dirmodeSearch = "Projects"
 dirmodePrint = "Projects"
 mainline()
 
-# runMod = "csv"
-# dirNameInput = dirNameInputMain
-# dirNameOutput = dirNameOutputMain
-# autoTagListEntry = []
-# includefile = includefilemain[:]
-# includepath = includefilemain[:]
-# excludefile = excludefilemain[:]
-# excludepath = excludefilemain[:]
-# dirmodeSearch = "Projects"
-# dirmodePrint = "Projects"
-# mainline()
+runMod = "data"
+dirNameInput = dirNameInputMain
+dirNameOutput = dirNameOutputMain
+autoTagListEntry = []
+includefile = includefilemain[:]
+includepath = includefilemain[:]
+excludefile = excludefilemain[:]
+excludepath = excludefilemain[:]
+dirmodeSearch = "Projects"
+dirmodePrint = "Projects"
+mainline()
 
 runMod = "html"
 dirNameInput = dirNameInputMain
@@ -1124,7 +1271,7 @@ autoTagListEntry = [topPath1]
 includefile = []
 includepath = [topPath1]
 excludefile = ["copy","backup"]
-excludepath = ["archive", "backup", "test","Images", "InfoSelect", 
+excludepath = ["archive", "backup", "test","Images", "InfoSelect",
                "Obsidian","Typora","Zotero","ARFB",
                "z_python-for-excel",
                "Repos"]

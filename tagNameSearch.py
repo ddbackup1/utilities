@@ -155,7 +155,7 @@ def processFileMain(allFilesMain, taglist2, excludetag):
 # Main:
 # remember these are list terms need to be separated
 taglist1 = []  # files
-taglist2 = ["/SQL", "lam"]  # tags
+taglist2 = ["/SQL", "lambda"]  # tags
 
 excludefile = [
     "@",
