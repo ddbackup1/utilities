@@ -522,18 +522,36 @@ def processFileMain(allFilesMain):
             fileo.write(f"---\n")
             fileo.write(f"filename: {fullfilename}\n")
             fileo.write(f"dirfolder:          {clipTempList2}\n")
-            fileo.write(f"dirname:        {clipOutputBackwardTemp}\n")
+            # z conversion to c and SharedA to 2data
+            clipOutputBackwardTemp1 = clipOutputBackwardTemp.replace(
+                "C:\\2data\\", "Z:\\SharedA\\"
+            )
+            fileo.write(f"dirname:        {clipOutputBackwardTemp1}\n")
             fileo.write(f"processMod:         {processMod}\n")
             fileo.write(
                 f"dateMod:         {mod_date[:8]}.{mod_date[8:12]}.{mod_date[12:-1]}\n"
             )
             # fileo.write(f"obsidianUIMode: preview\n")
             if processMod != "Jupyter":
-                fileo.write(f"dirpath:          {clipOutputFileTemp}\n")
-                fileo.write(
-                    f"dirfilenamez:    {clipOutputFileTemp}/{fullfilenameTemp}{extname}\n"
+                # z conversion to c and SharedA to 2data
+                clipOutputFileTemp1 = clipOutputFileTemp.replace(
+                    "file:///c", "file:///z"
                 )
-                # added 2024-06-18
+                clipOutputFileTemp1 = clipOutputFileTemp1.replace(
+                    "/2data/", "/SharedA/"
+                )
+                fileo.write(f"dirpath:          {clipOutputFileTemp1}\n")
+                # z conversion to c and SharedA to 2data
+                clipOutputFileTemp1 = clipOutputFileTemp.replace(
+                    "file:///c", "file:///z"
+                )
+                clipOutputFileTemp1 = clipOutputFileTemp1.replace(
+                    "/2data/", "/SharedA/"
+                )
+                fileo.write(
+                    f"dirfilenamez:    {clipOutputFileTemp1}/{fullfilenameTemp}{extname}\n"
+                )
+                # z conversion to c and SharedA to 2data
                 clipOutputFileTemp1 = clipOutputFileTemp.replace(
                     "file:///z", "file:///c"
                 )
@@ -552,13 +570,30 @@ def processFileMain(allFilesMain):
                 clipOutputFile = (
                     "file:///" + driveLetter.lower() + "%3A" + clipOutputFile[1]
                 )
-                fileo.write(f"dirpath:          {clipOutputFileTemp}\n")
-                fileo.write(f"dirfilenamepy:     {clipOutputFile}\n")
+                # z conversion to c and SharedA to 2data
+                clipOutputFileTemp1 = clipOutputFileTemp.replace(
+                    "file:///c", "file:///z"
+                )
+                clipOutputFileTemp1 = clipOutputFileTemp1.replace(
+                    "/2data/", "/SharedA/"
+                )
+                fileo.write(f"dirpath:          {clipOutputFileTemp1}\n")
+                # z conversion to c and SharedA to 2data
+                clipOutputFile1 = clipOutputFile.replace("file:///c", "file:///z")
+                clipOutputFile1 = clipOutputFile1.replace("/2data/", "/SharedA/")
+                fileo.write(f"dirfilenamepy:     {clipOutputFile1}\n")
                 clipOutputFileTemp = clipOutputFile.rstrip().split(".")
                 clipOutputFileTemp[1] = ".ipynb"
                 clipOutputFileTemp = "".join(clipOutputFileTemp)
-                fileo.write(f"dirfilenamez:  {clipOutputFileTemp}\n")
-                # added 2024-06-18
+                # z conversion to c and SharedA to 2data
+                clipOutputFileTemp1 = clipOutputFileTemp.replace(
+                    "file:///c", "file:///z"
+                )
+                clipOutputFileTemp1 = clipOutputFileTemp1.replace(
+                    "/2data/", "/SharedA/"
+                )
+                fileo.write(f"dirfilenamez:  {clipOutputFileTemp1}\n")
+                # z conversion to c and SharedA to 2data
                 clipOutputFileTemp1 = clipOutputFileTemp.replace(
                     "file:///z", "file:///c"
                 )
@@ -745,8 +780,8 @@ def processFileMain(allFilesMain):
                         # exclude comment lines from auto tagging
                         if line.strip()[0] not in ["'", '"', "~"]:
                             for tag in autoTagListEntry:
-                                # update 2024-06-04 to partial match
                                 #
+                                # update 2024-06-04 to partial match
                                 # if tag.lower() in line.lower():
                                 #     tagtemp = "#z/" + tag.lower()
                                 #     if tagtemp not in autoTagListTotal:
@@ -754,6 +789,12 @@ def processFileMain(allFilesMain):
                                 # added
                                 # line = line.replace(".", " ")
                                 # words = line.lower().split()
+                                #
+                                # This code uses regular expressions to replace non-alphabetic
+                                # and non-slash characters with spaces in the 'line' variable.
+                                # Then it converts the resulting string
+                                # to lowercase and splits it into a list of words.
+                                # required because tags can't have spaces
                                 pattern = r"[^a-zA-Z/]"
                                 result = re.sub(pattern, " ", line)
                                 words = result.lower().split()
@@ -803,9 +844,10 @@ def processFileMain(allFilesMain):
                     "xlsx",
                     "html",
                     "htm",
+                    "txt",
                     "zzz",
                 ]:
-                    fileo.write("truncating after 20 lines....\n")
+                    fileo.write("vscode truncated after 20 lines....\n")
                     break
                 # if sql comment strip comment so processed like python mainline
                 if line[0:4] == "-- #":
@@ -1011,6 +1053,7 @@ cntFileBlocked4 = 0
 updateMode = True
 checkModificationDate = True
 # ----------------------------------------------------------
+
 # if checkModificationDate == False:
 #     dir_path = "C:\\2data\\Obsidian\\CodeVault\\2data"
 #     shutil.rmtree(dir_path)
@@ -1026,6 +1069,7 @@ checkModificationDate = True
 # dirNameInputRoot1 = "C:\\2data"
 
 # ----------------------------------------------------------
+
 if checkModificationDate == False:
     dir_path = "Z:\\SharedA\\Obsidian\\CodeVault\\SharedA"
     shutil.rmtree(dir_path)
